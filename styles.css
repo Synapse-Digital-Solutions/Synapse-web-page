@@ -1707,6 +1707,49 @@ a.crow:hover .crow-arrow {
   transform: translateY(-1px);
 }
 
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.form-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  animation: fadeInUp 0.5s ease both;
+}
+
+.form-success-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(124,58,237,0.45);
+}
+
+.form-success-title {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.form-success-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
 /* ═══════════════════════════════════════
    FOOTER
 ═══════════════════════════════════════ */
@@ -2459,6 +2502,146 @@ footer strong {
   font-weight: 700;
   color: rgba(255,255,255,0.5);
   text-align: right;
+}
+
+/* ══════════════════════════════════════════
+   MOCKUP ANIMATIONS
+══════════════════════════════════════════ */
+
+/* -- Browser mockup: líneas del hero aparecen -- */
+@keyframes mbLineIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Cursor parpadeante en URL -- */
+@keyframes mbCursor {
+  0%, 100% { opacity: 1; } 50% { opacity: 0; }
+}
+
+/* -- Cards del browser entran -- */
+@keyframes mbCardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -- KPI badge de nuevo lead -- */
+@keyframes mbBadgeIn {
+  0%   { opacity: 0; transform: translateX(12px); }
+  15%  { opacity: 1; transform: translateX(0); }
+  75%  { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(12px); }
+}
+
+/* -- Pipeline card aparece -- */
+@keyframes mbPipeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Barra de progreso crece -- */
+@keyframes mbBarFill {
+  from { width: 0; }
+}
+
+/* Estado inicial: oculto para animar */
+.mb-htitle-line          { opacity: 0; }
+.mb-badge-strip          { opacity: 0; }
+.mb-btn-row              { opacity: 0; }
+.mb-stats-strip          { opacity: 0; }
+.mb-card                 { opacity: 0; }
+
+.mb-lead-card            { opacity: 0; }
+.mb-kpi-bar              { width: 0; }
+
+/* Clase que activa las animaciones del browser */
+.mock-browser-animated .mb-badge-strip {
+  animation: mbLineIn 0.4s ease 0.1s both;
+}
+.mock-browser-animated .mb-htitle-line:nth-child(1) {
+  animation: mbLineIn 0.4s ease 0.25s both;
+}
+.mock-browser-animated .mb-htitle-line:nth-child(2) {
+  animation: mbLineIn 0.4s ease 0.45s both;
+}
+.mock-browser-animated .mb-htitle-line:nth-child(3) {
+  animation: mbLineIn 0.4s ease 0.65s both;
+}
+.mock-browser-animated .mb-btn-row {
+  animation: mbLineIn 0.4s ease 0.85s both;
+}
+.mock-browser-animated .mb-stats-strip {
+  animation: mbLineIn 0.4s ease 1.05s both;
+}
+.mock-browser-animated .mb-card:nth-child(1) {
+  animation: mbCardIn 0.35s ease 1.25s both;
+}
+.mock-browser-animated .mb-card:nth-child(2) {
+  animation: mbCardIn 0.35s ease 1.45s both;
+}
+.mock-browser-animated .mb-card:nth-child(3) {
+  animation: mbCardIn 0.35s ease 1.65s both;
+}
+
+/* Cursor en URL bar */
+.mock-browser-animated .mb-url::after {
+  content: '|';
+  margin-left: 2px;
+  animation: mbCursor 0.9s step-end infinite;
+  color: var(--violet);
+  font-size: 0.75em;
+}
+
+/* Clase que activa las animaciones del CRM */
+.mock-crm-animated .mb-kpi-bar {
+  animation: mbBarFill 1.2s cubic-bezier(.22,1,.36,1) 0.4s both;
+  width: 82%;
+}
+.mock-crm-animated .mb-lead-card:nth-child(1) {
+  animation: mbPipeIn 0.35s ease 0.2s both;
+}
+.mock-crm-animated .mb-lead-card:nth-child(2) {
+  animation: mbPipeIn 0.35s ease 0.4s both;
+}
+.mock-crm-animated .mb-lead-card:nth-child(3) {
+  animation: mbPipeIn 0.35s ease 0.6s both;
+}
+.mock-crm-animated .mb-lead-card:nth-child(4) {
+  animation: mbPipeIn 0.35s ease 0.8s both;
+}
+.mock-crm-animated .mb-lead-card:nth-child(5) {
+  animation: mbPipeIn 0.35s ease 1.0s both;
+}
+
+/* Badge "Nuevo lead" flotante */
+.mb-new-lead-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: linear-gradient(135deg, var(--violet), var(--blue));
+  color: #fff;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.38rem;
+  font-weight: 700;
+  padding: 0.22rem 0.45rem;
+  border-radius: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 2px 10px rgba(124,58,237,0.5);
+  opacity: 0;
+}
+.mb-new-lead-badge::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+.mb-dashboard { position: relative; }
+.mock-crm-animated .mb-new-lead-badge {
+  animation: mbBadgeIn 3s ease 1.5s infinite;
 }
 
 /* ── Strategy mockup ── */
