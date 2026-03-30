@@ -14,7 +14,7 @@
 <!-- SPLASH -->
 <div id="splash">
   <div class="splash-content">
-    <img class="splash-logo" src="logo.png" alt="Synapse">
+    <img class="splash-video" src="SYNAPSE.gif" alt="Synapse">
   </div>
 </div>
 
@@ -39,6 +39,7 @@
 
     <!-- Hero -->
     <section class="hero">
+      <canvas id="hero-canvas"></canvas>
       <div class="hero-left">
         <div class="hero-badge">
           <span class="badge-dot"></span>
@@ -64,26 +65,29 @@
 
     <!-- Features -->
     <section class="features">
-      <div class="feat anim">
+      <div class="feat anim" onclick="showService('svc-web')">
         <div class="feat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
         <div class="feat-title">Páginas Web de Alto Impacto</div>
         <p class="feat-desc">Sitios diseñados para convertir visitantes en clientes. Rápidos, modernos y optimizados para buscadores desde el día uno.</p>
+        <div class="feat-link">Ver más <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
       </div>
-      <div class="feat anim anim-d1">
+      <div class="feat anim anim-d1" onclick="showService('svc-crm')">
         <div class="feat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <div class="feat-title">CRM que Organiza tu Negocio</div>
         <p class="feat-desc">Gestiona leads, ventas y clientes desde un solo lugar. Sin hojas de cálculo, sin caos, sin perder oportunidades.</p>
+        <div class="feat-link">Ver más <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
       </div>
-      <div class="feat anim anim-d2">
+      <div class="feat anim anim-d2" onclick="showService('svc-estrategia')">
         <div class="feat-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         </div>
         <div class="feat-title">Estrategia Digital Completa</div>
         <p class="feat-desc">No solo construimos, te asesoramos. Definimos contigo qué herramientas necesita tu negocio y cómo sacarles el máximo.</p>
+        <div class="feat-link">Ver más <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
       </div>
     </section>
 
@@ -91,10 +95,10 @@
     <section class="numbers">
       <div class="numbers-label">Nuestros números hablan</div>
       <div class="numbers-grid">
-        <div class="nstat anim"><span class="nstat-num">50+</span><span class="nstat-lbl">Proyectos entregados</span></div>
-        <div class="nstat anim anim-d1"><span class="nstat-num">98%</span><span class="nstat-lbl">Satisfacción del cliente</span></div>
-        <div class="nstat anim anim-d2"><span class="nstat-num">3x</span><span class="nstat-lbl">Más conversiones promedio</span></div>
-        <div class="nstat anim anim-d3"><span class="nstat-num">24h</span><span class="nstat-lbl">Tiempo de respuesta</span></div>
+        <div class="nstat anim"><span class="nstat-num" data-target="50" data-suffix="+">50+</span><span class="nstat-lbl">Proyectos entregados</span></div>
+        <div class="nstat anim anim-d1"><span class="nstat-num" data-target="98" data-suffix="%">98%</span><span class="nstat-lbl">Satisfacción del cliente</span></div>
+        <div class="nstat anim anim-d2"><span class="nstat-num" data-target="3" data-suffix="x">3x</span><span class="nstat-lbl">Más conversiones promedio</span></div>
+        <div class="nstat anim anim-d3"><span class="nstat-num" data-target="24" data-suffix="h">24h</span><span class="nstat-lbl">Tiempo de respuesta</span></div>
       </div>
     </section>
 
@@ -157,7 +161,7 @@
     </section>
 
     <!-- 01 · Páginas Web -->
-    <section class="svcs-block anim">
+    <section class="svcs-block anim" id="svc-web">
       <div class="svcs-block-inner">
         <div class="svcs-block-text">
           <div class="svcs-block-num">01</div>
@@ -268,7 +272,7 @@
     </section>
 
     <!-- 02 · CRM -->
-    <section class="svcs-block svcs-block-alt anim">
+    <section class="svcs-block svcs-block-alt anim" id="svc-crm">
       <div class="svcs-block-inner">
         <div class="svcs-block-visual">
           <!-- Dashboard / CRM mockup -->
@@ -412,7 +416,7 @@
     </section>
 
     <!-- 03 · Estrategia Digital -->
-    <section class="svcs-block anim">
+    <section class="svcs-block anim" id="svc-estrategia">
       <div class="svcs-block-inner">
         <div class="svcs-block-text">
           <div class="svcs-block-num">03</div>
