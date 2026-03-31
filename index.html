@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta name="google-site-verification" content="Rqc0c_HI-KEeF6E9MHAdJ_nldu4nO7oOfgojSmsULPY" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synapse Digital Solutions</title>
@@ -29,8 +30,24 @@
       <li><a data-page="nosotros"                 onclick="showPage('nosotros')">Nosotros</a></li>
       <li><a data-page="contacto"                 onclick="showPage('contacto')">Contacto</a></li>
     </ul>
-    <button class="nav-cta" onclick="showPage('contacto')">Cotizar</button>
+    <div class="nav-right">
+      <button class="nav-cta" onclick="showPage('contacto')">Cotizar</button>
+      <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <ul class="mobile-links">
+      <li><a class="active" data-page="inicio"    onclick="showPage('inicio')">Inicio</a></li>
+      <li><a data-page="servicios"                onclick="showPage('servicios')">Servicios</a></li>
+      <li><a data-page="nosotros"                 onclick="showPage('nosotros')">Nosotros</a></li>
+      <li><a data-page="contacto"                 onclick="showPage('contacto')">Contacto</a></li>
+    </ul>
+    <button class="btn-primary" onclick="showPage('contacto')" style="width:100%;text-align:center">Cotizar</button>
+  </div>
 
   <!-- ══════════════════════════════
        PÁGINA: INICIO

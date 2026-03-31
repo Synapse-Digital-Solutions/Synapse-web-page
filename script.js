@@ -66,14 +66,34 @@ function showService(sectionId) {
   }, 120);
 }
 
+/* ═══════════════════════════════════════
+   MENÚ MÓVIL
+═══════════════════════════════════════ */
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('nav-hamburger');
+  menu.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('nav-hamburger');
+  if (menu) menu.classList.remove('open');
+  if (btn)  btn.classList.remove('open');
+}
+
+
 function showPage(name) {
+  closeMobileMenu();
+
   // Ocultar todas las páginas
   document.querySelectorAll('.page').forEach(p => {
     p.classList.remove('active');
   });
 
-  // Quitar active de todos los links
-  document.querySelectorAll('.nav-links a').forEach(a => {
+  // Quitar active de todos los links (nav + móvil)
+  document.querySelectorAll('a[data-page]').forEach(a => {
     a.classList.remove('active');
   });
 
@@ -82,9 +102,8 @@ function showPage(name) {
   target.classList.add('active');
   target.scrollTop = 0;
 
-  // Marcar link activo en el nav
-  const activeLink = document.querySelector(`.nav-links a[data-page="${name}"]`);
-  if (activeLink) activeLink.classList.add('active');
+  // Marcar link activo en nav y menú móvil
+  document.querySelectorAll(`a[data-page="${name}"]`).forEach(a => a.classList.add('active'));
 
   // Arrancar animaciones de scroll de esa página
   setTimeout(() => {
