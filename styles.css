@@ -2872,6 +2872,14 @@ footer strong {
 
   .svcs-block { padding: 4rem 5%; }
 
+  .svcs-block-alt .svcs-block-visual { overflow: hidden; }
+  .mb-dashboard {
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: calc(100% / 0.75);
+    margin-bottom: calc(360px * (0.75 - 1));
+  }
+
   .contact-grid { gap: 2rem; }
 
   .cform { padding: 1.5rem; }
@@ -2924,6 +2932,13 @@ footer strong {
   .svcs-hero { padding: 5rem 4% 2.5rem; min-height: auto; }
   .svcs-block { padding: 3rem 4%; }
   .svcs-cta { padding: 4rem 4%; }
+
+  .mb-dashboard {
+    transform: scale(0.58);
+    transform-origin: top left;
+    width: calc(100% / 0.58);
+    margin-bottom: calc(360px * (0.58 - 1));
+  }
 
   .contact-hero { padding: 5rem 4% 2rem; min-height: auto; }
   .contact-main { padding: 2.5rem 4% 4rem; }
