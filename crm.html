@@ -161,11 +161,70 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #3d2a70; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #5b21b6; }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; background: #0a0810;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  #login-screen.hidden { display: none; }
+  .login-box {
+    width: 380px; background: #13101e;
+    border: 1px solid #2a2440; border-radius: 16px;
+    padding: 40px 36px; text-align: center;
+  }
+  .login-logo { margin-bottom: 6px; }
+  .login-logo img { height: 48px; object-fit: contain; }
+  .login-title { font-size: 20px; font-weight: 700; color: #e8e4f4; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .login-sub { font-size: 13px; color: #6b6488; margin-bottom: 32px; }
+  .login-field { text-align: left; margin-bottom: 16px; }
+  .login-field label { display: block; font-size: 12px; font-weight: 600; color: #a89ec8; margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .login-field input {
+    width: 100%; padding: 10px 14px; border-radius: 8px;
+    background: #0d0b14; border: 1px solid #2a2440;
+    color: #e8e4f4; font-size: 14px; font-family: inherit;
+    outline: none; transition: border-color .15s;
+  }
+  .login-field input:focus { border-color: #7c3aed; }
+  .login-field input::placeholder { color: #3d3658; }
+  .login-error { font-size: 12px; color: #f87171; margin-bottom: 14px; min-height: 18px; }
+  .login-btn {
+    width: 100%; padding: 11px; border-radius: 8px;
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    color: #fff; font-size: 14px; font-weight: 700;
+    font-family: inherit; border: none; cursor: pointer;
+    transition: opacity .15s; letter-spacing: 0.2px;
+  }
+  .login-btn:hover { opacity: 0.88; }
+  .login-footer { margin-top: 24px; font-size: 11px; color: #3d3658; }
 </style>
 </head>
 <body>
 
-<div class="layout">
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA/gAAAD3CAIAAAAmB2iIAAEAAElEQVR42uy9eXyfVZU//r732T579qRp0jZN9422lEKBsgiFsguKjICiMwou43xnfjougzoLOqMyM+qMiDouAyMuIy7ICCqyyw4tSynQje5psyef9dnuvb8/TnL7NClVME3S8pxXrSH95JPnc5/7nPs+57zP+zClFGKLLbbYYosttthiiy22Y8t4vASxxRZbbLHFFltsscUWA/3YYosttthiiy222GKLLQb6scUWW2yxxRZbbLHFFlsM9GOLLbbYYosttthiiy222GKLLQb6scUWW2yxxRZbbLHFFhv/B8j8DcmjE7RZAAAAAElFTkSuQmCC" alt="Synapse" onerror="this.style.display='none'">
+    </div>
+    <div class="login-title">Synapse CRM</div>
+    <div class="login-sub">Acceso interno — Synapse Digital Solutions</div>
+    <div class="login-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="contacto@synapseds.com" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn">Ingresar</button>
+    <div class="login-footer">© 2025 Synapse Digital Solutions</div>
+  </div>
+</div>
+
+<div class="layout" id="crm-app" style="display:none">
   <!-- SIDEBAR -->
   <nav class="sidebar">
     <div class="brand">
@@ -776,8 +835,30 @@ function closeModal(id){document.getElementById(id).style.display='none';}
 function overlayClose(event,id){if(event.target===event.currentTarget)closeModal(id);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('modal-form');closeModal('modal-quote');}});
 
+// ── LOGIN ──
+const CRM_USER = 'contacto@synapseds.com';
+const CRM_PASS = '123456';
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+  if (email === CRM_USER && pass === CRM_PASS) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('crm-app').style.display = '';
+    loadAll();
+  } else {
+    err.textContent = 'Correo o contraseña incorrectos.';
+    document.getElementById('login-pass').value = '';
+  }
+}
+
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
 // ── INIT ──
-loadAll();
+// loadAll() is called after successful login
 
 </script>
 </body>
