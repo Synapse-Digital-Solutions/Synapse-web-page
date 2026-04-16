@@ -308,6 +308,17 @@
   </div>
 </div>
 
+<!-- PLAN EDIT MODAL -->
+<div id="modal-plan" style="display:none" class="overlay" onclick="overlayClose(event,'modal-plan')">
+  <div class="modal" style="max-width:600px;max-height:88vh" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <span class="modal-title" id="modal-plan-title">Editar plan</span>
+      <button class="modal-close" onclick="closeModal('modal-plan')">×</button>
+    </div>
+    <div id="modal-plan-body" style="overflow-y:auto;max-height:calc(88vh - 80px)"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -332,29 +343,107 @@ const PLANES = [
 // Cargar planes desde localStorage si existen
 (function() {
   try {
-    const stored = localStorage.getItem('synapse_planes');
+    const stored = localStorage.getItem('synapse_planes_v2');
     if (stored) {
       const parsed = JSON.parse(stored);
-      parsed.forEach((p, i) => { if (PLANES[i]) { PLANES[i].nombre = p.nombre; PLANES[i].implementacion = p.implementacion; PLANES[i].mensual = p.mensual; } });
+      PLANES.length = 0;
+      parsed.forEach(p => PLANES.push(p));
     }
   } catch(e) {}
 })();
-function savePlanesToStorage() { localStorage.setItem('synapse_planes', JSON.stringify(PLANES.map(p => ({nombre:p.nombre, implementacion:p.implementacion, mensual:p.mensual})))); }
-function editPlan(id) {
-  const p = PLANES.find(x => x.id === id);
-  const nombre = prompt('Nombre del plan:', p.nombre);
-  if (nombre === null) return;
-  const impl = prompt('Precio implementación (número sin comas):', p.implementacion);
-  if (impl === null) return;
-  const mens = prompt('Precio mensual (número sin comas):', p.mensual);
-  if (mens === null) return;
-  p.nombre = nombre.trim() || p.nombre;
-  p.implementacion = Math.abs(parseInt(impl)) || p.implementacion;
-  p.mensual = Math.abs(parseInt(mens)) || p.mensual;
-  savePlanesToStorage();
-  renderAll();
-  toast('Plan actualizado');
+function savePlanesToStorage() {
+  localStorage.setItem('synapse_planes_v2', JSON.stringify(PLANES));
 }
+
+// ── PLAN EDITOR ──
+let editingPlanId = null;
+let editingFeatures = [];
+
+function openPlanEditor(id) {
+  if (id === 'new') {
+    editingPlanId = null;
+    editingFeatures = [];
+    document.getElementById('modal-plan-title').textContent = 'Nuevo plan';
+  } else {
+    const p = PLANES.find(x => x.id === id);
+    editingPlanId = id;
+    editingFeatures = [...(p.features || [])];
+    document.getElementById('modal-plan-title').textContent = 'Editar plan';
+  }
+  renderPlanEditorBody();
+  document.getElementById('modal-plan').style.display = 'flex';
+}
+
+function renderPlanEditorBody() {
+  const p = editingPlanId ? PLANES.find(x => x.id === editingPlanId) : null;
+  document.getElementById('modal-plan-body').innerHTML = `
+    <div style="padding:0 2px 20px">
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-full"><label class="form-lbl">Nombre del plan</label>
+          <input class="form-input" id="pe-nombre" value="${p ? esc(p.nombre) : ''}"></div>
+        <div><label class="form-lbl">Implementación (MXN)</label>
+          <input class="form-input" id="pe-impl" type="number" value="${p ? p.implementacion : ''}"></div>
+        <div><label class="form-lbl">Mensual (MXN)</label>
+          <input class="form-input" id="pe-mens" type="number" value="${p ? p.mensual : ''}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <label class="form-lbl" style="margin:0">Servicios incluidos</label>
+        <button class="btn-sm" onclick="peAddFeature()">+ Agregar ítem</button>
+      </div>
+      <div id="pe-features" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">
+        ${editingFeatures.map((f, i) => `
+        <div style="display:flex;gap:6px;align-items:center">
+          <input value="${esc(f)}" oninput="editingFeatures[${i}]=this.value" class="form-input" style="flex:1">
+          <button onclick="peRemoveFeature(${i})" class="btn-del" style="flex-shrink:0;padding:7px 10px">✕</button>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #2a2440">
+        ${editingPlanId ? `<button onclick="deletePlan(${editingPlanId})" class="btn-del">🗑 Eliminar plan</button>` : '<div></div>'}
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="closeModal('modal-plan')">Cancelar</button>
+          <button class="btn-primary" onclick="savePlanEditor()">Guardar plan</button>
+        </div>
+      </div>
+    </div>`;
+}
+function peAddFeature() {
+  editingFeatures.push('');
+  renderPlanEditorBody();
+  const inputs = document.querySelectorAll('#pe-features input');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+function peRemoveFeature(i) {
+  editingFeatures.splice(i, 1);
+  renderPlanEditorBody();
+}
+function savePlanEditor() {
+  const nombre = document.getElementById('pe-nombre').value.trim();
+  const impl = Math.abs(parseInt(document.getElementById('pe-impl').value)) || 0;
+  const mens = Math.abs(parseInt(document.getElementById('pe-mens').value)) || 0;
+  if (!nombre) { alert('El nombre es obligatorio.'); return; }
+  const features = editingFeatures.filter(f => f.trim());
+  if (editingPlanId) {
+    const p = PLANES.find(x => x.id === editingPlanId);
+    p.nombre = nombre; p.implementacion = impl; p.mensual = mens; p.features = features;
+  } else {
+    const newId = Math.max(0, ...PLANES.map(p => p.id)) + 1;
+    PLANES.push({ id: newId, nombre, implementacion: impl, mensual: mens, features });
+  }
+  savePlanesToStorage();
+  closeModal('modal-plan');
+  renderAll();
+  toast(editingPlanId ? 'Plan actualizado' : 'Plan creado');
+}
+function deletePlan(id) {
+  if (!confirm('¿Eliminar este plan? No se puede deshacer.')) return;
+  const idx = PLANES.findIndex(p => p.id === id);
+  if (idx >= 0) PLANES.splice(idx, 1);
+  savePlanesToStorage();
+  closeModal('modal-plan');
+  renderAll();
+  toast('Plan eliminado');
+}
+function editPlan(id) { openPlanEditor(id); }
 
 let records = [];
 let tab = 'dashboard';
@@ -413,7 +502,7 @@ async function loadAll() {
       estado: r.estado || 'no_llamado',
       tipo: r.tipo || 'prospecto',
       cotizaciones: (cots || []).filter(c => c.registro_id === r.id).map(c => ({
-        folio: c.folio, plan: c.plan, monto: Number(c.monto), fecha: c.fecha
+        id: c.id, folio: c.folio, plan: c.plan, monto: Number(c.monto), fecha: c.fecha
       }))
     }));
   } catch(err) {
@@ -456,6 +545,18 @@ async function dbToggleStatus(id, newEstado) {
 async function dbConvertir(id) {
   const { error } = await _supa.from('registros').update({ tipo: 'cliente' }).eq('id', id);
   if (error) throw error;
+}
+async function deleteCotizacion(cotId, registroId) {
+  if (!confirm('¿Eliminar esta cotización del historial?')) return;
+  try {
+    const { error } = await _supa.from('cotizaciones').delete().eq('id', cotId);
+    if (error) throw error;
+    records = records.map(r => r.id === registroId
+      ? {...r, cotizaciones: r.cotizaciones.filter(c => c.id !== cotId)}
+      : r);
+    renderAll();
+    toast('Cotización eliminada');
+  } catch(e) { toast('Error: ' + e.message); }
 }
 async function dbAddCotizacion(registroId, cot) {
   const { error } = await _supa.from('cotizaciones').insert([{
@@ -524,7 +625,7 @@ function renderDashboard() {
       <div><div style="font-size:28px;font-weight:800;color:${color};line-height:1">${val}</div><div style="font-size:12px;color:#a89ec8;margin-top:4px;font-weight:500">${lbl}</div></div>
     </div>`;
   const histRows = allCots.length === 0
-    ? `<tr><td colspan="5" class="empty-state">Sin cotizaciones aún. Usa "Cotizar" en cualquier prospecto.</td></tr>`
+    ? `<tr><td colspan="6" class="empty-state">Sin cotizaciones aún. Usa "Cotizar" en cualquier prospecto.</td></tr>`
     : [...allCots].reverse().map(c => `<tr>
         <td><span class="history-folio">#${esc(c.folio)}</span></td>
         <td><div style="display:flex;align-items:center;gap:9px">
@@ -535,6 +636,7 @@ function renderDashboard() {
         <td style="font-size:13px">${esc(c.plan)}</td>
         <td style="font-weight:600">${fmt(Number(c.monto)||0)}</td>
         <td style="font-size:12px;color:var(--text-3)">${esc(c.fecha)}</td>
+        <td>${c.id ? `<button class="btn-del" onclick="deleteCotizacion('${c.id}','${c.rec.id}')">${icons.trash}</button>` : ''}</td>
       </tr>`).join('');
   return `
   <div class="page-hdr">
@@ -557,7 +659,7 @@ function renderDashboard() {
   </div>
   <div class="sec-lbl">Historial de cotizaciones</div>
   <div class="card"><div class="table-scroll"><table>
-    <thead><tr><th>Folio</th><th>Cliente / Prospecto</th><th>Plan</th><th>Monto</th><th>Fecha</th></tr></thead>
+    <thead><tr><th>Folio</th><th>Cliente / Prospecto</th><th>Plan</th><th>Monto</th><th>Fecha</th><th></th></tr></thead>
     <tbody>${histRows}</tbody>
   </table></div></div>`;
 }
@@ -612,21 +714,23 @@ function renderTable(tipo) {
 // ── RENDER SERVICIOS ──
 function renderServicios() {
   return `
-  <div class="page-hdr"><div><div class="page-title">Servicios y precios</div><div class="page-sub">Planes disponibles para cotizar</div></div></div>
+  <div class="page-hdr">
+    <div><div class="page-title">Servicios y precios</div><div class="page-sub">Planes disponibles para cotizar</div></div>
+    <button class="btn-primary" onclick="openPlanEditor('new')">${icons.plus} Nuevo plan</button>
+  </div>
   <div class="srv-grid">
     ${PLANES.map((p,i) => `
-    <div class="srv-card" style="border-top-color:#9b6dff;${p.id===3?'grid-column:1/-1':''}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div class="srv-card" style="border-top-color:#9b6dff;${PLANES.length===3&&i===2?'grid-column:1/-1':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div><div style="font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Plan ${p.id}</div>
         <div style="font-size:17px;font-weight:700">${esc(p.nombre)}</div></div>
-        ${p.id===3?'<span class="pill-static" style="background:#0a2318;color:#34d399">Ahorro $2,000</span>':''}
+        <button class="btn-sm" onclick="openPlanEditor(${p.id})">✏️ Editar</button>
       </div>
-        <button class="btn-sm" onclick="editPlan(${p.id})" style="margin-top:4px">✏️ Editar precios</button>
       <div class="price-boxes">
         <div class="price-box"><div class="price-box-lbl">Implementación</div><div class="price-box-val">${fmt(p.implementacion)}</div><div class="price-box-sub">Pago único</div></div>
         <div class="price-box"><div class="price-box-lbl">Mensual</div><div class="price-box-val" style="color:#9b6dff">${fmt(p.mensual)}</div><div class="price-box-sub">Mantenimiento / mes</div></div>
       </div>
-      <div class="feat-list">${p.features.map(f=>`<div class="feat-item"><span class="feat-check">✓</span>${esc(f)}</div>`).join('')}</div>
+      <div class="feat-list">${(p.features||[]).map(f=>`<div class="feat-item"><span class="feat-check">✓</span>${esc(f)}</div>`).join('')}</div>
     </div>`).join('')}
   </div>`;
 }
@@ -634,6 +738,7 @@ function renderServicios() {
 // ── RENDER NOTAS ──
 let notasClienteId = null;
 let notasHistorial = {};
+let notasSearch = '';
 
 async function loadNotas(registroId) {
   try {
@@ -648,7 +753,7 @@ async function loadNotas(registroId) {
 }
 
 function renderNotas() {
-  const todos = records.filter(r => r.nombre);
+  const todos = records.filter(r => r.nombre && (!notasSearch || r.nombre.toLowerCase().includes(notasSearch.toLowerCase())));
   const clienteActual = notasClienteId ? records.find(r => r.id === notasClienteId) : null;
   const historial = notasClienteId ? (notasHistorial[notasClienteId] || []) : [];
   return `
@@ -658,6 +763,9 @@ function renderNotas() {
   <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;min-height:500px">
     <div style="background:#13101e;border-radius:12px;border:1px solid #2a2440;overflow:hidden">
       <div style="padding:12px 14px;border-bottom:1px solid #2a2440;font-size:11px;font-weight:700;color:#6b6488;text-transform:uppercase;letter-spacing:.8px">Registros</div>
+      <div style="padding:8px 10px;border-bottom:1px solid #1e1a2e">
+        <input placeholder="Buscar…" value="${esc(notasSearch)}" oninput="notasSearch=this.value;renderAll()" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #2a2440;background:#0d0b14;color:#e8e4f4;font-size:12px;font-family:inherit;outline:none">
+      </div>
       <div style="overflow-y:auto;max-height:600px">
         ${todos.length === 0 ? '<div style="padding:20px;color:#6b6488;font-size:13px">Sin registros</div>' :
           todos.map(r => `
@@ -806,7 +914,7 @@ function selectQuotePlan(id) {
   document.getElementById('q-descuento').value = '';
 }
 
-function doQuote() {
+async function doQuote() {
   const plan = PLANES.find(p => p.id === selectedPlanId);
   const r = quoteTarget;
   const folio = String(Date.now()).slice(-6);
@@ -814,10 +922,14 @@ function doQuote() {
   const feats = plan.features.map(f => `<div class="feat">${f}</div>`).join('');
 
   const descPct   = Math.min(100, Math.max(0, parseFloat(document.getElementById('q-descuento').value)||0));
-  const implBase  = Math.round((parseFloat(document.getElementById('q-precio-impl').value)||plan.implementacion) * (1 - descPct/100));
+  const implOrig  = Math.round(parseFloat(document.getElementById('q-precio-impl').value)||plan.implementacion);
+  const implDesc  = Math.round(implOrig * descPct / 100);
+  const implBase  = implOrig - implDesc;
   const implIVA   = Math.round(implBase * 0.16);
   const implTotal = implBase + implIVA;
-  const mensBase  = Math.round((parseFloat(document.getElementById('q-precio-mens').value)||plan.mensual) * (1 - descPct/100));
+  const mensOrig  = Math.round(parseFloat(document.getElementById('q-precio-mens').value)||plan.mensual);
+  const mensDesc  = Math.round(mensOrig * descPct / 100);
+  const mensBase  = mensOrig - mensDesc;
   const mensIVA   = Math.round(mensBase * 0.16);
   const mensTotal = mensBase + mensIVA;
 
@@ -895,7 +1007,8 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
 
       <div class="pricing-block">
         <div class="pricing-title">Implementación — Pago único</div>
-        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(implBase)}</span></div>
+        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(implOrig)}</span></div>
+        ${descPct > 0 ? `<div class="price-line" style="color:#16a34a"><span class="lbl" style="color:#16a34a">Descuento (${descPct}%)</span><span class="amt" style="color:#16a34a">− ${fmt(implDesc)}</span></div>` : ''}
         <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(implIVA)}</span></div>
         <div class="price-line total"><span class="lbl">Total implementación</span><span class="amt">${fmt(implTotal)}</span></div>
       </div>
@@ -904,7 +1017,8 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
 
       <div class="pricing-block">
         <div class="pricing-title">Mantenimiento mensual</div>
-        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensBase)}</span></div>
+        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensOrig)}</span></div>
+        ${descPct > 0 ? `<div class="price-line" style="color:#16a34a"><span class="lbl" style="color:#16a34a">Descuento (${descPct}%)</span><span class="amt" style="color:#16a34a">− ${fmt(mensDesc)}</span></div>` : ''}
         <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(mensIVA)}</span></div>
         <div class="price-line total"><span class="lbl">Total mensual</span><span class="amt">${fmt(mensTotal)}</span></div>
       </div>
@@ -924,10 +1038,12 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
   w.document.write(html);
   w.document.close();
 
+  const cotData = {folio, plan: plan.nombre, monto: implTotal, fecha: new Date().toLocaleDateString('es-MX')};
+  try { await dbAddCotizacion(r.id, cotData); } catch(e) { console.error('Error guardando cotización:', e); }
   records = records.map(rec => rec.id === r.id
-    ? {...rec, cotizaciones: [...(rec.cotizaciones||[]), {folio, plan: plan.nombre, fecha: new Date().toLocaleDateString('es-MX'), monto: plan.implementacion}]}
+    ? {...rec, cotizaciones: [...(rec.cotizaciones||[]), cotData]}
     : rec);
-  save(); closeModal('modal-quote'); renderAll();
+  closeModal('modal-quote'); renderAll();
   toast(`Cotización #${folio} generada`);
 }
 
@@ -992,7 +1108,7 @@ function exportCSV(tipo) {
 }
 function closeModal(id){document.getElementById(id).style.display='none';}
 function overlayClose(event,id){if(event.target===event.currentTarget)closeModal(id);}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('modal-form');closeModal('modal-quote');}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('modal-form');closeModal('modal-quote');closeModal('modal-plan');}});
 
 // ── LOGIN ──
 const CRM_USER = 'contacto@synapseds.com';
