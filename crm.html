@@ -275,6 +275,19 @@
           <option value="cliente">Cliente</option>
         </select>
       </div>
+      <div class="form-full">
+        <label class="form-lbl">Sector</label>
+        <select class="form-input" id="f-sector">
+          <option value="">— Sin clasificar —</option>
+          <option value="Despacho de Abogados">Despacho de Abogados</option>
+          <option value="Boutique de Ropa">Boutique de Ropa</option>
+          <option value="Restaurante / Servicios de Comida">Restaurante / Servicios de Comida</option>
+          <option value="Inmobiliaria">Inmobiliaria</option>
+          <option value="Salud / Médico">Salud / Médico</option>
+          <option value="Tecnología">Tecnología</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-form')">Cancelar</button>
@@ -449,6 +462,7 @@ let records = [];
 let tab = 'dashboard';
 let search = '';
 let filtroEstado = 'todos';
+let filtroSector = 'todos';
 let editingId = null;
 let quoteTarget = null;
 let selectedPlanId = 1;
@@ -501,6 +515,7 @@ async function loadAll() {
       notas: r.notas || '',
       estado: r.estado || 'no_llamado',
       tipo: r.tipo || 'prospecto',
+      sector: r.sector || '',
       cotizaciones: (cots || []).filter(c => c.registro_id === r.id).map(c => ({
         id: c.id, folio: c.folio, plan: c.plan, monto: Number(c.monto), fecha: c.fecha
       }))
@@ -521,7 +536,7 @@ async function dbAdd(data) {
   const { data: row, error } = await _supa.from('registros').insert([{
     nombre: data.nombre, telefono: data.telefono, email: data.email,
     ubicacion: data.ubicacion, sitio_web: data.sitioWeb,
-    notas: data.notas, estado: data.estado, tipo: data.tipo
+    notas: data.notas, estado: data.estado, tipo: data.tipo, sector: data.sector
   }]).select().single();
   if (error) throw error;
   return row;
@@ -530,7 +545,7 @@ async function dbUpdate(id, data) {
   const { error } = await _supa.from('registros').update({
     nombre: data.nombre, telefono: data.telefono, email: data.email,
     ubicacion: data.ubicacion, sitio_web: data.sitioWeb,
-    notas: data.notas, estado: data.estado, tipo: data.tipo
+    notas: data.notas, estado: data.estado, tipo: data.tipo, sector: data.sector
   }).eq('id', id);
   if (error) throw error;
 }
@@ -566,7 +581,7 @@ async function dbAddCotizacion(registroId, cot) {
 }
 
 // ── NAV ──
-function setTab(t) { tab = t; search = ''; filtroEstado = 'todos'; renderAll(); }
+function setTab(t) { tab = t; search = ''; filtroEstado = 'todos'; filtroSector = 'todos'; renderAll(); }
 function renderNav() {
   const pros = records.filter(r => r.tipo === 'prospecto').length;
   const clis = records.filter(r => r.tipo === 'cliente').length;
@@ -595,6 +610,7 @@ function renderNav() {
 function getFiltered(tipo) {
   return records.filter(r => r.tipo === tipo)
     .filter(r => filtroEstado === 'todos' || r.estado === filtroEstado)
+    .filter(r => filtroSector === 'todos' || r.sector === filtroSector)
     .filter(r => {
       if (!search) return true;
       const q = search.toLowerCase();
@@ -680,6 +696,7 @@ function renderTable(tipo) {
         <td style="color:var(--text-2)">${esc(r.email||'—')}</td>
         <td>${r.sitioWeb&&r.sitioWeb!=='NA'?`<a href="${esc(r.sitioWeb.startsWith('http')?r.sitioWeb:'#')}" target="_blank" style="font-size:12px;color:#9b6dff;text-decoration:none;">${esc(r.sitioWeb.replace(/https?:\/\//, '').slice(0,28))}</a>`:'<span style="color:var(--text-3);font-size:12px">Sin sitio</span>'}</td>
         <td><button class="pill ${r.estado==='llamado'?'pill-llamado':'pill-nollamado'}" onclick="toggleStatus('${r.id}')">${r.estado==='llamado'?'Llamado':'Sin llamar'}</button></td>
+        <td><span style="font-size:11px;color:var(--text-3)">${esc(r.sector||'—')}</span></td>
         <td style="max-width:180px"><span style="font-size:12px;color:var(--text-2)">${esc((r.notas||'').slice(0,48))}${(r.notas||'').length>48?'…':''}</span></td>
         <td><div class="actions">
           <button class="btn-sm" onclick="openEdit('${r.id}')">${icons.edit} Editar</button>
@@ -704,9 +721,20 @@ function renderTable(tipo) {
     <button class="filter-btn ${filtroEstado==='todos'?'active':''}" onclick="filtroEstado='todos';renderAll()">Todos</button>
     <button class="filter-btn ${filtroEstado==='llamado'?'active':''}" onclick="filtroEstado='llamado';renderAll()">Llamados</button>
     <button class="filter-btn ${filtroEstado==='no_llamado'?'active':''}" onclick="filtroEstado='no_llamado';renderAll()">Sin llamar</button>
+    <select onchange="filtroSector=this.value;renderAll()" style="padding:7px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:#13101e;color:${filtroSector!=='todos'?'#9b6dff':'var(--text-3)'};font-family:inherit;cursor:pointer;outline:none;font-weight:${filtroSector!=='todos'?'600':'500'}">
+      <option value="todos">Sector: todos</option>
+      <option value="Despacho de Abogados" ${filtroSector==='Despacho de Abogados'?'selected':''}>Despacho de Abogados</option>
+      <option value="Boutique de Ropa" ${filtroSector==='Boutique de Ropa'?'selected':''}>Boutique de Ropa</option>
+      <option value="Restaurante / Servicios de Comida" ${filtroSector==='Restaurante / Servicios de Comida'?'selected':''}>Restaurante / Comida</option>
+      <option value="Inmobiliaria" ${filtroSector==='Inmobiliaria'?'selected':''}>Inmobiliaria</option>
+      <option value="Salud / Médico" ${filtroSector==='Salud / Médico'?'selected':''}>Salud / Médico</option>
+      <option value="Tecnología" ${filtroSector==='Tecnología'?'selected':''}>Tecnología</option>
+      <option value="Otro" ${filtroSector==='Otro'?'selected':''}>Otro</option>
+      <option value="" ${filtroSector===''?'selected':''}>Sin clasificar</option>
+    </select>
   </div>
   <div class="card"><div class="table-scroll"><table>
-    <thead><tr><th>Nombre / Ubicación</th><th>Teléfono</th><th>Correo</th><th>Sitio Web</th><th>Estado</th><th>Notas</th><th>Acciones</th></tr></thead>
+    <thead><tr><th>Nombre / Ubicación</th><th>Teléfono</th><th>Correo</th><th>Sitio Web</th><th>Estado</th><th>Sector</th><th>Notas</th><th>Acciones</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div></div>`;
 }
@@ -844,6 +872,7 @@ function openAdd(tipo) {
   editingId = null;
   document.getElementById('mf-title').textContent = 'Agregar registro';
   ['f-nombre','f-tel','f-email','f-ubic','f-web','f-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-sector').value = '';
   document.getElementById('f-estado').value = 'no_llamado';
   document.getElementById('f-tipo').value = tipo || 'prospecto';
   document.getElementById('modal-form').style.display = 'flex';
@@ -859,8 +888,9 @@ function openEdit(id) {
   document.getElementById('f-ubic').value   = r.ubicacion||'';
   document.getElementById('f-web').value    = r.sitioWeb||'';
   document.getElementById('f-notas').value  = r.notas||'';
-  document.getElementById('f-estado').value = r.estado||'no_llamado';
-  document.getElementById('f-tipo').value   = r.tipo||'prospecto';
+  document.getElementById('f-estado').value  = r.estado||'no_llamado';
+  document.getElementById('f-tipo').value    = r.tipo||'prospecto';
+  document.getElementById('f-sector').value  = r.sector||'';
   document.getElementById('modal-form').style.display = 'flex';
   setTimeout(() => document.getElementById('f-nombre').focus(), 100);
 }
@@ -875,6 +905,7 @@ async function saveForm() {
     notas: document.getElementById('f-notas').value.trim(),
     estado: document.getElementById('f-estado').value,
     tipo: document.getElementById('f-tipo').value,
+    sector: document.getElementById('f-sector').value,
   };
   try {
     if (editingId) { await dbUpdate(editingId, data); records = records.map(r=>r.id===editingId?{...r,...data}:r); toast('Registro actualizado'); }
