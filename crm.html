@@ -928,8 +928,7 @@ async function doQuote() {
   const implIVA   = Math.round(implBase * 0.16);
   const implTotal = implBase + implIVA;
   const mensOrig  = Math.round(parseFloat(document.getElementById('q-precio-mens').value)||plan.mensual);
-  const mensDesc  = Math.round(mensOrig * descPct / 100);
-  const mensBase  = mensOrig - mensDesc;
+  const mensBase  = mensOrig;
   const mensIVA   = Math.round(mensBase * 0.16);
   const mensTotal = mensBase + mensIVA;
 
@@ -1019,7 +1018,6 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
       <div class="pricing-block">
         <div class="pricing-title">Mantenimiento mensual</div>
         <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensOrig)}</span></div>
-        ${descPct > 0 ? `<div class="price-line" style="color:#16a34a"><span class="lbl" style="color:#16a34a">Descuento (${descPct}%)</span><span class="amt" style="color:#16a34a">− ${fmt(mensDesc)}</span></div>` : ''}
         <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(mensIVA)}</span></div>
         <div class="price-line total"><span class="lbl">Total mensual</span><span class="amt">${fmt(mensTotal)}</span></div>
       </div>
