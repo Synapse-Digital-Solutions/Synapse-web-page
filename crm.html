@@ -1046,18 +1046,24 @@ async function doQuote() {
   const fecha = new Date().toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
   const planNombre = selPlanes.length === 1 ? selPlanes[0].nombre : selPlanes.map(p=>p.nombre).join(' + ');
 
-  const descPct   = Math.min(100, Math.max(0, parseFloat(document.getElementById('q-descuento').value)||0));
-  // Per-plan prices (use PLANES values for breakdown)
-  const implSubtotal = selPlanes.reduce((s,p) => s + p.implementacion, 0);
-  const mensSubtotal = selPlanes.reduce((s,p) => s + p.mensual, 0);
-  const implDesc  = Math.round(implSubtotal * descPct / 100);
-  const implBase  = implSubtotal - implDesc;
-  const implIVA   = Math.round(implBase * 0.16);
-  const implTotal = implBase + implIVA;
-  const mensIVA   = Math.round(mensSubtotal * 0.16);
-  const mensTotal = mensSubtotal + mensIVA;
-  // Keep for cotData compat
-  const implOrig  = implSubtotal;
+  const descPct      = Math.min(100, Math.max(0, parseFloat(document.getElementById('q-descuento').value)||0));
+  // Per-plan breakdown (PLANES values, always numbers)
+  const implFromPlans = selPlanes.reduce((s,p) => s + (Number(p.implementacion)||0), 0);
+  const mensFromPlans = selPlanes.reduce((s,p) => s + (Number(p.mensual)||0), 0);
+  // Modal field values — user may have adjusted them; these are the source of truth
+  const implFieldVal  = Math.round(parseFloat(document.getElementById('q-precio-impl').value)||0);
+  const mensFieldVal  = Math.round(parseFloat(document.getElementById('q-precio-mens').value)||0);
+  // Use field if set, otherwise fall back to PLANES sum
+  const implSubtotal  = implFieldVal > 0 ? implFieldVal : implFromPlans;
+  const mensSubtotal  = mensFieldVal > 0 ? mensFieldVal : mensFromPlans;
+  const hasMens       = mensSubtotal > 0;
+  const implDesc      = Math.round(implSubtotal * descPct / 100);
+  const implBase      = implSubtotal - implDesc;
+  const implIVA       = Math.round(implBase * 0.16);
+  const implTotal     = implBase + implIVA;
+  const mensIVA       = Math.round(mensSubtotal * 0.16);
+  const mensTotal     = mensSubtotal + mensIVA;
+  const implOrig      = implSubtotal;
 
   const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><title>Cotización #${folio}</title>
@@ -1165,11 +1171,11 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
       <div class="s-total"><span class="l">Total implementación</span><span class="v">${fmt(implTotal)}</span></div>
     </div>
 
-    ${mensSubtotal > 0 ? `
+    ${hasMens ? `
     <div class="s-section">
       <div class="s-sec-title">Mensualidad recurrente</div>
-      ${selPlanes.filter(p => p.mensual > 0).map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(p.mensual)}/mes</span></div>`).join('')}
-      ${selPlanes.filter(p => p.mensual > 0).length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal mensual</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>` : ''}
+      ${selPlanes.filter(p => Number(p.mensual) > 0).map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(Number(p.mensual))}/mes</span></div>`).join('')}
+      ${selPlanes.filter(p => Number(p.mensual) > 0).length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal mensual</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>` : ''}
       <div class="s-row iva"><span class="l">IVA (16%)</span><span class="v">+ ${fmt(mensIVA)}/mes</span></div>
       <div class="s-total"><span class="l">Total mensual</span><span class="v">${fmt(mensTotal)}/mes</span></div>
     </div>` : ''}
