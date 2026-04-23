@@ -1041,24 +1041,23 @@ function selectQuotePlan(id) {
 async function doQuote() {
   const selPlanes = PLANES.filter(p => selectedPlanIds.includes(p.id));
   if (selPlanes.length === 0) { toast('Selecciona al menos un plan'); return; }
-  const plan = selPlanes[0]; // for compat (nombre, features de todos)
   const r = quoteTarget;
   const folio = String(Date.now()).slice(-6);
   const fecha = new Date().toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
   const planNombre = selPlanes.length === 1 ? selPlanes[0].nombre : selPlanes.map(p=>p.nombre).join(' + ');
-  const allFeats = [...new Set(selPlanes.flatMap(p => p.features||[]))];
-  const feats = allFeats.map(f => `<div class="feat">${f}</div>`).join('');
 
   const descPct   = Math.min(100, Math.max(0, parseFloat(document.getElementById('q-descuento').value)||0));
-  const implOrig  = Math.round(parseFloat(document.getElementById('q-precio-impl').value)||plan.implementacion);
-  const implDesc  = Math.round(implOrig * descPct / 100);
-  const implBase  = implOrig - implDesc;
+  // Per-plan prices (use PLANES values for breakdown)
+  const implSubtotal = selPlanes.reduce((s,p) => s + p.implementacion, 0);
+  const mensSubtotal = selPlanes.reduce((s,p) => s + p.mensual, 0);
+  const implDesc  = Math.round(implSubtotal * descPct / 100);
+  const implBase  = implSubtotal - implDesc;
   const implIVA   = Math.round(implBase * 0.16);
   const implTotal = implBase + implIVA;
-  const mensOrig  = Math.round(parseFloat(document.getElementById('q-precio-mens').value)||plan.mensual);
-  const mensBase  = mensOrig;
-  const mensIVA   = Math.round(mensBase * 0.16);
-  const mensTotal = mensBase + mensIVA;
+  const mensIVA   = Math.round(mensSubtotal * 0.16);
+  const mensTotal = mensSubtotal + mensIVA;
+  // Keep for cotData compat
+  const implOrig  = implSubtotal;
 
   const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><title>Cotización #${folio}</title>
@@ -1084,24 +1083,37 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
 .plan-name-hdr h2{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.2px}
 .plan-name-hdr p{font-size:8px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
 .plan-body{border:1px solid #e2e8f0;border-top:none;border-radius:0 0 7px 7px;overflow:hidden}
-.feats-section{padding:10px 18px 8px;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
-.feat{font-size:10px;color:#475569;padding:3px 0;border-bottom:1px solid #f8fafc;display:flex;align-items:flex-start;gap:6px}
+.feats-section{padding:8px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.feat{font-size:10px;color:#475569;padding:2px 0;border-bottom:1px solid #f8fafc;display:flex;align-items:flex-start;gap:5px}
 .feat:last-child{border-bottom:none}
 .feat::before{content:"✓";color:#22c55e;font-weight:700;flex-shrink:0}
-.pricing-section{padding:10px 18px;display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
-.pricing-block{margin-bottom:8px}
-.pricing-block:last-child{margin-bottom:0}
-.pricing-title{font-size:8px;font-weight:700;color:#0f172a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
-.price-line{display:flex;justify-content:space-between;padding:4px 0;font-size:10px;border-bottom:1px solid #f8fafc}
+.plan-price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#f8fafc;border-top:1px solid #e2e8f0}
+.plan-price-row .lbl{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:1px}
+.plan-price-row .vals{display:flex;gap:20px;align-items:baseline}
+.plan-price-row .impl{font-size:13px;font-weight:700;color:#0f172a}
+.plan-price-row .mens{font-size:11px;color:#6d28d9;font-weight:600}
+.summary-box{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-top:14px}
+.summary-hdr{background:#0f172a;padding:8px 16px;display:flex;justify-content:space-between}
+.summary-hdr span{font-size:8px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:2px}
+.summary-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.summary-col{padding:10px 16px}
+.summary-col:first-child{border-right:1px solid #e2e8f0}
+.s-title{font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+.price-line{display:flex;justify-content:space-between;padding:3px 0;font-size:10px;border-bottom:1px solid #f8fafc}
 .price-line:last-child{border-bottom:none}
 .price-line .lbl{color:#64748b}
 .price-line .amt{font-weight:500;color:#0f172a}
+.price-line.plan-row .lbl{color:#374151;font-weight:600}
+.price-line.plan-row .amt{color:#374151}
+.price-line.disc .lbl,.price-line.disc .amt{color:#16a34a}
 .price-line.iva .lbl{color:#94a3b8;font-style:italic}
 .price-line.iva .amt{color:#94a3b8}
-.price-line.total{border-top:1.5px solid #0f172a;margin-top:4px;padding-top:6px;font-weight:700;font-size:12px}
-.price-line.total .lbl{color:#0f172a}
-.price-line.total .amt{color:#0f172a;font-size:13px}
-.pricing-divider{display:none}
+.price-line.subtotal{border-top:1px dashed #cbd5e1;margin-top:2px;padding-top:5px}
+.price-line.subtotal .lbl{color:#475569;font-weight:600}
+.price-line.subtotal .amt{font-weight:600;color:#0f172a}
+.price-line.grand-total{border-top:2px solid #0f172a;margin-top:4px;padding-top:6px;font-weight:700;font-size:12px}
+.price-line.grand-total .lbl{color:#0f172a}
+.price-line.grand-total .amt{color:#0f172a;font-size:13px}
 .footer{padding:8px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:9px;color:#94a3b8}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
@@ -1124,32 +1136,46 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
     <div class="client-row"><span class="client-lbl">Ubicación</span><span class="client-val">${r.ubicacion||'—'}</span></div>
   </div>
 
-  <div class="sec">Plan cotizado</div>
-  <div class="plan-name-hdr">
-    <h2>${planNombre}</h2>
-    <p>Synapse Digital Solutions</p>
-  </div>
-  <div class="plan-body">
-    <div class="feats-section">${feats}</div>
-    <div class="pricing-section">
+  <div class="sec">Servicios cotizados</div>
+  ${selPlanes.map((p,i) => {
+    const pFeats = (p.features||[]).map(f => `<div class="feat">${f}</div>`).join('');
+    return `
+  <div class="plan-body" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:10px">
+    <div class="plan-name-hdr" style="border-radius:0">
+      <h2>${p.nombre}</h2>
+      <p>Synapse Digital Solutions</p>
+    </div>
+    <div class="feats-section">${pFeats}</div>
+    <div class="plan-price-row">
+      <span class="lbl">Precio</span>
+      <span class="vals">
+        <span class="impl">${fmt(p.implementacion)} <span style="font-size:9px;font-weight:400;color:#94a3b8">implementación</span></span>
+        ${p.mensual > 0 ? `<span class="mens">+ ${fmt(p.mensual)}<span style="font-size:9px;font-weight:400;color:#94a3b8"> / mes</span></span>` : ''}
+      </span>
+    </div>
+  </div>`;
+  }).join('')}
 
-      <div class="pricing-block">
-        <div class="pricing-title">Implementación — Pago único</div>
-        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(implOrig)}</span></div>
-        ${descPct > 0 ? `<div class="price-line" style="color:#16a34a"><span class="lbl" style="color:#16a34a">Descuento (${descPct}%)</span><span class="amt" style="color:#16a34a">− ${fmt(implDesc)}</span></div>` : ''}
+  <div class="summary-box">
+    <div class="summary-hdr">
+      <span>Resumen de la cotización</span>
+    </div>
+    <div class="summary-body">
+      <div class="summary-col">
+        <div class="s-title">Implementación — Pago único</div>
+        ${selPlanes.map(p => `<div class="price-line plan-row"><span class="lbl">${p.nombre}</span><span class="amt">${fmt(p.implementacion)}</span></div>`).join('')}
+        ${selPlanes.length > 1 ? `<div class="price-line subtotal"><span class="lbl">Subtotal</span><span class="amt">${fmt(implSubtotal)}</span></div>` : ''}
+        ${descPct > 0 ? `<div class="price-line disc"><span class="lbl">Descuento (${descPct}%)</span><span class="amt">− ${fmt(implDesc)}</span></div>` : ''}
         <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(implIVA)}</span></div>
-        <div class="price-line total"><span class="lbl">Total implementación</span><span class="amt">${fmt(implTotal)}</span></div>
+        <div class="price-line grand-total"><span class="lbl">Total implementación</span><span class="amt">${fmt(implTotal)}</span></div>
       </div>
-
-      <div class="pricing-divider"></div>
-
-      <div class="pricing-block">
-        <div class="pricing-title">Mantenimiento mensual</div>
-        <div class="price-line"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensOrig)}</span></div>
-        <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(mensIVA)}</span></div>
-        <div class="price-line total"><span class="lbl">Total mensual</span><span class="amt">${fmt(mensTotal)}</span></div>
+      <div class="summary-col">
+        <div class="s-title">Mensualidad recurrente</div>
+        ${selPlanes.map(p => `<div class="price-line plan-row"><span class="lbl">${p.nombre}</span><span class="amt">${p.mensual > 0 ? fmt(p.mensual) : '—'}</span></div>`).join('')}
+        ${selPlanes.length > 1 && mensSubtotal > 0 ? `<div class="price-line subtotal"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensSubtotal)}</span></div>` : ''}
+        ${mensSubtotal > 0 ? `<div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(mensIVA)}</span></div>` : ''}
+        ${mensSubtotal > 0 ? `<div class="price-line grand-total"><span class="lbl">Total mensual</span><span class="amt">${fmt(mensTotal)}</span></div>` : '<div class="price-line grand-total"><span class="lbl">Total mensual</span><span class="amt">—</span></div>'}
       </div>
-
     </div>
   </div>
 </div>
