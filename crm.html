@@ -297,10 +297,19 @@
     <div class="client-box" id="q-client-info"></div>
     <div class="sec-lbl">Seleccionar plan</div>
     <div id="q-plan-list"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;background:#0d0b14;border-radius:8px;padding:14px;border:1px solid #2a2440">
-      <div><label class="form-lbl">Implementación (MXN)</label><input class="form-input" id="q-precio-impl" type="number" placeholder="0"></div>
-      <div><label class="form-lbl">Mensual (MXN)</label><input class="form-input" id="q-precio-mens" type="number" placeholder="0"></div>
-      <div><label class="form-lbl">Descuento (%)</label><input class="form-input" id="q-descuento" type="number" placeholder="0" min="0" max="100"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-top:14px;background:#0d0b14;border-radius:8px;padding:14px 16px;border:1px solid #2a2440;align-items:end">
+      <div>
+        <label class="form-lbl" style="font-size:10px;margin-bottom:5px;display:block">Implementación (MXN)</label>
+        <input class="form-input" id="q-precio-impl" type="number" placeholder="0" style="font-size:14px;font-weight:600;color:#e8e4f4">
+      </div>
+      <div>
+        <label class="form-lbl" style="font-size:10px;margin-bottom:5px;display:block">Mensual (MXN)</label>
+        <input class="form-input" id="q-precio-mens" type="number" placeholder="0" style="font-size:14px;font-weight:600;color:#9b6dff">
+      </div>
+      <div style="min-width:110px">
+        <label class="form-lbl" style="font-size:10px;margin-bottom:5px;display:block">Descuento (%)</label>
+        <input class="form-input" id="q-descuento" type="number" placeholder="0" min="0" max="100" style="font-size:14px;font-weight:600">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('modal-quote')">Cancelar</button>
@@ -456,7 +465,7 @@ let filtroEstado = 'todos';
 let filtroSector = 'todos';
 let editingId = null;
 let quoteTarget = null;
-let selectedPlanId = 1;
+let selectedPlanIds = [];
 
 const fmt = n => new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN', minimumFractionDigits:0}).format(n);
 const AC = ['#7c3aed','#0ea5e9','#10b981','#f59e0b','#ef4444','#a855f7','#ec4899','#14b8a6'];
@@ -991,40 +1000,54 @@ async function saveForm() {
 // ── QUOTE ──
 function openQuote(id) {
   quoteTarget = records.find(r => r.id === id);
-  selectedPlanId = 1;
+  selectedPlanIds = [];
   document.getElementById('q-client-info').innerHTML = `
     <div class="avatar" style="background:${aColor(quoteTarget.nombre)}">${esc(quoteTarget.nombre.slice(0,2).toUpperCase())}</div>
     <div><div style="font-weight:700;font-size:14px">${esc(quoteTarget.nombre)}</div>
     <div style="font-size:12px;color:var(--text-3);margin-top:3px">${esc(quoteTarget.telefono||'')}${quoteTarget.ubicacion?' · '+esc(quoteTarget.ubicacion):''}</div></div>`;
   renderPlanList();
-  const planDef = PLANES.find(p => p.id === 1);
-  document.getElementById('q-precio-impl').value = planDef.implementacion;
-  document.getElementById('q-precio-mens').value = planDef.mensual;
+  document.getElementById('q-precio-impl').value = '';
+  document.getElementById('q-precio-mens').value = '';
   document.getElementById('q-descuento').value = '';
   document.getElementById('modal-quote').style.display = 'flex';
 }
 function renderPlanList() {
-  document.getElementById('q-plan-list').innerHTML = PLANES.map(p => `
-    <div class="plan-card ${selectedPlanId===p.id?'selected':''}" onclick="selectQuotePlan(${p.id})">
-      <div class="plan-card-l"><div class="pname">${esc(p.nombre)}</div><div class="pmonth">+ ${fmt(p.mensual)} / mes</div></div>
+  document.getElementById('q-plan-list').innerHTML = PLANES.map(p => {
+    const sel = selectedPlanIds.includes(p.id);
+    return `
+    <div class="plan-card ${sel?'selected':''}" onclick="selectQuotePlan(${p.id})" style="position:relative">
+      <div style="position:absolute;top:10px;right:12px;width:18px;height:18px;border-radius:5px;border:2px solid ${sel?'#7c3aed':'#3a3258'};background:${sel?'#7c3aed':'transparent'};display:flex;align-items:center;justify-content:center;transition:all .15s">
+        ${sel?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+      </div>
+      <div class="plan-card-l" style="padding-right:28px"><div class="pname">${esc(p.nombre)}</div><div class="pmonth">+ ${fmt(p.mensual)} / mes</div></div>
       <div class="plan-card-r"><div class="pprice">${fmt(p.implementacion)}</div><div class="pprice-lbl">implementación</div></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function selectQuotePlan(id) {
-  selectedPlanId = id;
-  const p = PLANES.find(x => x.id === id);
+  if (selectedPlanIds.includes(id)) {
+    selectedPlanIds = selectedPlanIds.filter(x => x !== id);
+  } else {
+    selectedPlanIds.push(id);
+  }
+  const selPlanes = PLANES.filter(p => selectedPlanIds.includes(p.id));
+  const totalImpl = selPlanes.reduce((s, p) => s + p.implementacion, 0);
+  const totalMens = selPlanes.reduce((s, p) => s + p.mensual, 0);
   renderPlanList();
-  document.getElementById('q-precio-impl').value = p.implementacion;
-  document.getElementById('q-precio-mens').value = p.mensual;
-  document.getElementById('q-descuento').value = '';
+  document.getElementById('q-precio-impl').value = totalImpl || '';
+  document.getElementById('q-precio-mens').value = totalMens || '';
 }
 
 async function doQuote() {
-  const plan = PLANES.find(p => p.id === selectedPlanId);
+  const selPlanes = PLANES.filter(p => selectedPlanIds.includes(p.id));
+  if (selPlanes.length === 0) { toast('Selecciona al menos un plan'); return; }
+  const plan = selPlanes[0]; // for compat (nombre, features de todos)
   const r = quoteTarget;
   const folio = String(Date.now()).slice(-6);
   const fecha = new Date().toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
-  const feats = plan.features.map(f => `<div class="feat">${f}</div>`).join('');
+  const planNombre = selPlanes.length === 1 ? selPlanes[0].nombre : selPlanes.map(p=>p.nombre).join(' + ');
+  const allFeats = [...new Set(selPlanes.flatMap(p => p.features||[]))];
+  const feats = allFeats.map(f => `<div class="feat">${f}</div>`).join('');
 
   const descPct   = Math.min(100, Math.max(0, parseFloat(document.getElementById('q-descuento').value)||0));
   const implOrig  = Math.round(parseFloat(document.getElementById('q-precio-impl').value)||plan.implementacion);
@@ -1103,7 +1126,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
 
   <div class="sec">Plan cotizado</div>
   <div class="plan-name-hdr">
-    <h2>${plan.nombre}</h2>
+    <h2>${planNombre}</h2>
     <p>Synapse Digital Solutions</p>
   </div>
   <div class="plan-body">
@@ -1142,7 +1165,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
   w.document.write(html);
   w.document.close();
 
-  const cotData = {folio, plan: plan.nombre, monto: implTotal, fecha: new Date().toLocaleDateString('es-MX')};
+  const cotData = {folio, plan: planNombre, monto: implTotal, fecha: new Date().toLocaleDateString('es-MX')};
   try { await dbAddCotizacion(r.id, cotData); } catch(e) { console.error('Error guardando cotización:', e); }
   records = records.map(rec => rec.id === r.id
     ? {...rec, cotizaciones: [...(rec.cotizaciones||[]), cotData]}
