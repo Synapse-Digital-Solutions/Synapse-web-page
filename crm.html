@@ -1182,21 +1182,31 @@ function overlayClose(event,id){if(event.target===event.currentTarget)closeModal
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal('modal-form');closeModal('modal-quote');closeModal('modal-plan');}});
 
 // ── LOGIN ──
-const CRM_USER = 'contacto@synapseds.com';
-const CRM_PASS = '123456';
+function showApp(email) {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('crm-app').style.display = '';
+  document.getElementById('sidebar-user').textContent = email;
+  loadAll();
+}
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
   const err   = document.getElementById('login-error');
-  if (email === CRM_USER && pass === CRM_PASS) {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('crm-app').style.display = '';
-    document.getElementById('sidebar-user').textContent = email;
-    loadAll();
-  } else {
+  const btn   = document.getElementById('login-btn');
+  err.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Ingresando…';
+  try {
+    const { data, error } = await _supa.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    showApp(data.user.email);
+  } catch(e) {
     err.textContent = 'Correo o contraseña incorrectos.';
     document.getElementById('login-pass').value = '';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Ingresar';
   }
 }
 
@@ -1204,7 +1214,8 @@ document.getElementById('login-btn').addEventListener('click', doLogin);
 document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
 
-function doLogout() {
+async function doLogout() {
+  await _supa.auth.signOut();
   document.getElementById('crm-app').style.display = 'none';
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('login-email').value = '';
@@ -1213,8 +1224,11 @@ function doLogout() {
   records = []; tab = 'dashboard'; search = ''; filtroEstado = 'todos';
 }
 
-// ── INIT ──
-// loadAll() is called after successful login
+// ── INIT ── restore session if already logged in
+(async () => {
+  const { data: { session } } = await _supa.auth.getSession();
+  if (session) showApp(session.user.email);
+})();
 
 </script>
 </body>
