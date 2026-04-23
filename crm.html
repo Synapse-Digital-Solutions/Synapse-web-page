@@ -1174,8 +1174,11 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
     ${hasMens ? `
     <div class="s-section">
       <div class="s-sec-title">Mensualidad recurrente</div>
-      ${selPlanes.filter(p => Number(p.mensual) > 0).map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(Number(p.mensual))}/mes</span></div>`).join('')}
-      ${selPlanes.filter(p => Number(p.mensual) > 0).length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal mensual</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>` : ''}
+      ${selPlanes.length === 1
+        ? `<div class="s-row plan"><span class="l">${selPlanes[0].nombre}</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>`
+        : selPlanes.filter(p => Number(p.mensual) > 0).map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(Number(p.mensual))}/mes</span></div>`).join('') +
+          (selPlanes.filter(p => Number(p.mensual) > 0).length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal mensual</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>` : '')
+      }
       <div class="s-row iva"><span class="l">IVA (16%)</span><span class="v">+ ${fmt(mensIVA)}/mes</span></div>
       <div class="s-total"><span class="l">Total mensual</span><span class="v">${fmt(mensTotal)}/mes</span></div>
     </div>` : ''}
