@@ -277,16 +277,7 @@
       </div>
       <div class="form-full">
         <label class="form-lbl">Sector</label>
-        <select class="form-input" id="f-sector">
-          <option value="">— Sin clasificar —</option>
-          <option value="Despacho de Abogados">Despacho de Abogados</option>
-          <option value="Boutique de Ropa">Boutique de Ropa</option>
-          <option value="Restaurante / Servicios de Comida">Restaurante / Servicios de Comida</option>
-          <option value="Inmobiliaria">Inmobiliaria</option>
-          <option value="Salud / Médico">Salud / Médico</option>
-          <option value="Tecnología">Tecnología</option>
-          <option value="Otro">Otro</option>
-        </select>
+        <select class="form-input" id="f-sector" onchange="onSectorChange(this)"></select>
       </div>
     </div>
     <div class="modal-footer">
@@ -489,6 +480,53 @@ function handleSearch(el) {
   const inp = document.getElementById('search-input');
   if (inp) { inp.focus(); inp.setSelectionRange(pos, pos); }
 }
+// ── SECTORES (localStorage) ──
+const SECTORES_KEY = 'synapse_sectores_v1';
+const SECTORES_DEFAULT = ['Despacho de Abogados','Boutique de Ropa','Restaurante / Servicios de Comida','Inmobiliaria','Salud / Médico','Tecnología','Otro'];
+function getSectores() {
+  try { const s = JSON.parse(localStorage.getItem(SECTORES_KEY)); return Array.isArray(s) ? s : [...SECTORES_DEFAULT]; }
+  catch(e) { return [...SECTORES_DEFAULT]; }
+}
+function saveSectores(arr) { localStorage.setItem(SECTORES_KEY, JSON.stringify(arr)); }
+function addSector(nombre) {
+  const arr = getSectores();
+  if (!arr.includes(nombre)) { arr.push(nombre); saveSectores(arr); }
+}
+function populateSectorSelect(selectedValue) {
+  const sel = document.getElementById('f-sector');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Sin clasificar —</option>' +
+    getSectores().map(s => `<option value="${s}"${s===selectedValue?' selected':''}>${s}</option>`).join('') +
+    `<option value="__nuevo__">➕ Agregar sector…</option>`;
+}
+function onSectorChange(sel) {
+  if (sel.value === '__nuevo__') {
+    const nombre = prompt('Nombre del nuevo sector:','');
+    if (nombre && nombre.trim()) {
+      addSector(nombre.trim());
+      populateSectorSelect(nombre.trim());
+      sel.value = nombre.trim();
+    } else {
+      sel.value = '';
+    }
+  }
+}
+function onFiltroSectorChange(sel) {
+  if (sel.value === '__nuevo__') {
+    const nombre = prompt('Nombre del nuevo sector:','');
+    if (nombre && nombre.trim()) {
+      addSector(nombre.trim());
+      filtroSector = nombre.trim();
+    } else {
+      filtroSector = 'todos';
+    }
+    renderAll();
+  } else {
+    filtroSector = sel.value;
+    renderAll();
+  }
+}
+
 function handleNotasSearch(el) {
   const v = el.value, pos = el.selectionStart;
   notasSearch = v;
@@ -728,16 +766,11 @@ function renderTable(tipo) {
     <button class="filter-btn ${filtroEstado==='todos'?'active':''}" onclick="filtroEstado='todos';renderAll()">Todos</button>
     <button class="filter-btn ${filtroEstado==='llamado'?'active':''}" onclick="filtroEstado='llamado';renderAll()">Llamados</button>
     <button class="filter-btn ${filtroEstado==='no_llamado'?'active':''}" onclick="filtroEstado='no_llamado';renderAll()">Sin llamar</button>
-    <select onchange="filtroSector=this.value;renderAll()" style="padding:7px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:#13101e;color:${filtroSector!=='todos'?'#9b6dff':'var(--text-3)'};font-family:inherit;cursor:pointer;outline:none;font-weight:${filtroSector!=='todos'?'600':'500'}">
+    <select onchange="onFiltroSectorChange(this)" style="padding:7px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:#13101e;color:${filtroSector!=='todos'?'#9b6dff':'var(--text-3)'};font-family:inherit;cursor:pointer;outline:none;font-weight:${filtroSector!=='todos'?'600':'500'}">
       <option value="todos">Sector: todos</option>
-      <option value="Despacho de Abogados" ${filtroSector==='Despacho de Abogados'?'selected':''}>Despacho de Abogados</option>
-      <option value="Boutique de Ropa" ${filtroSector==='Boutique de Ropa'?'selected':''}>Boutique de Ropa</option>
-      <option value="Restaurante / Servicios de Comida" ${filtroSector==='Restaurante / Servicios de Comida'?'selected':''}>Restaurante / Comida</option>
-      <option value="Inmobiliaria" ${filtroSector==='Inmobiliaria'?'selected':''}>Inmobiliaria</option>
-      <option value="Salud / Médico" ${filtroSector==='Salud / Médico'?'selected':''}>Salud / Médico</option>
-      <option value="Tecnología" ${filtroSector==='Tecnología'?'selected':''}>Tecnología</option>
-      <option value="Otro" ${filtroSector==='Otro'?'selected':''}>Otro</option>
+      ${getSectores().map(s=>`<option value="${esc(s)}" ${filtroSector===s?'selected':''}>${esc(s)}</option>`).join('')}
       <option value="" ${filtroSector===''?'selected':''}>Sin clasificar</option>
+      <option value="__nuevo__">➕ Agregar sector…</option>
     </select>
   </div>
   <div class="card"><div class="table-scroll"><table>
@@ -913,7 +946,7 @@ function openAdd(tipo) {
   editingId = null;
   document.getElementById('mf-title').textContent = 'Agregar registro';
   ['f-nombre','f-tel','f-email','f-ubic','f-web','f-notas'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-sector').value = '';
+  populateSectorSelect('');
   document.getElementById('f-estado').value = 'no_llamado';
   document.getElementById('f-tipo').value = tipo || 'prospecto';
   document.getElementById('modal-form').style.display = 'flex';
@@ -931,7 +964,7 @@ function openEdit(id) {
   document.getElementById('f-notas').value  = r.notas||'';
   document.getElementById('f-estado').value  = r.estado||'no_llamado';
   document.getElementById('f-tipo').value    = r.tipo||'prospecto';
-  document.getElementById('f-sector').value  = r.sector||'';
+  populateSectorSelect(r.sector||'');
   document.getElementById('modal-form').style.display = 'flex';
   setTimeout(() => document.getElementById('f-nombre').focus(), 100);
 }
