@@ -489,6 +489,13 @@ function handleSearch(el) {
   const inp = document.getElementById('search-input');
   if (inp) { inp.focus(); inp.setSelectionRange(pos, pos); }
 }
+function handleNotasSearch(el) {
+  const v = el.value, pos = el.selectionStart;
+  notasSearch = v;
+  renderAll();
+  const inp = document.getElementById('notas-search-input');
+  if (inp) { inp.focus(); inp.setSelectionRange(pos, pos); }
+}
 
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -581,7 +588,7 @@ async function dbAddCotizacion(registroId, cot) {
 }
 
 // ── NAV ──
-function setTab(t) { tab = t; search = ''; filtroEstado = 'todos'; filtroSector = 'todos'; renderAll(); }
+function setTab(t) { tab = t; search = ''; filtroEstado = 'todos'; filtroSector = 'todos'; renderAll(); if (t === 'notas') { loadAllNotas().then(() => renderAll()); } }
 function renderNav() {
   const pros = records.filter(r => r.tipo === 'prospecto').length;
   const clis = records.filter(r => r.tipo === 'cliente').length;
@@ -767,6 +774,7 @@ function renderServicios() {
 let notasClienteId = null;
 let notasHistorial = {};
 let notasSearch = '';
+let notasAllFeed = [];
 
 async function loadNotas(registroId) {
   try {
@@ -779,22 +787,38 @@ async function loadNotas(registroId) {
     }));
   } catch(e) { console.error('Error cargando notas:', e); }
 }
+async function loadAllNotas() {
+  try {
+    const { data, error } = await _supa.from('notas_historial')
+      .select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    notasHistorial = {};
+    notasAllFeed = (data || []).map(n => {
+      if (!notasHistorial[n.registro_id]) notasHistorial[n.registro_id] = [];
+      const entry = {
+        texto: n.contenido,
+        fecha: new Date(n.created_at).toLocaleString('es-MX', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})
+      };
+      notasHistorial[n.registro_id].push(entry);
+      return { registro_id: n.registro_id, ...entry };
+    });
+  } catch(e) { console.error('Error cargando notas:', e); }
+}
 
 function renderNotas() {
   const todos = records.filter(r => r.nombre && (!notasSearch || r.nombre.toLowerCase().includes(notasSearch.toLowerCase())));
   const clienteActual = notasClienteId ? records.find(r => r.id === notasClienteId) : null;
-  const historial = notasClienteId ? (notasHistorial[notasClienteId] || []) : [];
   return `
   <div class="page-hdr">
-    <div><div class="page-title">Notas</div><div class="page-sub">Historial de notas por cliente o prospecto</div></div>
+    <div><div class="page-title">Notas</div><div class="page-sub">Historial de notas de todos los clientes y prospectos</div></div>
   </div>
   <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;min-height:500px">
-    <div style="background:#13101e;border-radius:12px;border:1px solid #2a2440;overflow:hidden">
+    <div style="background:#13101e;border-radius:12px;border:1px solid #2a2440;overflow:hidden;display:flex;flex-direction:column">
       <div style="padding:12px 14px;border-bottom:1px solid #2a2440;font-size:11px;font-weight:700;color:#6b6488;text-transform:uppercase;letter-spacing:.8px">Registros</div>
       <div style="padding:8px 10px;border-bottom:1px solid #1e1a2e">
-        <input placeholder="Buscar…" value="${esc(notasSearch)}" oninput="notasSearch=this.value;renderAll()" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #2a2440;background:#0d0b14;color:#e8e4f4;font-size:12px;font-family:inherit;outline:none">
+        <input id="notas-search-input" placeholder="Buscar…" value="${esc(notasSearch)}" oninput="handleNotasSearch(this)" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #2a2440;background:#0d0b14;color:#e8e4f4;font-size:12px;font-family:inherit;outline:none">
       </div>
-      <div style="overflow-y:auto;max-height:600px">
+      <div style="overflow-y:auto;flex:1">
         ${todos.length === 0 ? '<div style="padding:20px;color:#6b6488;font-size:13px">Sin registros</div>' :
           todos.map(r => `
           <button onclick="selectNotasCliente('${r.id}')" style="width:100%;text-align:left;padding:10px 14px;background:${notasClienteId===r.id?'rgba(124,58,237,.18)':'transparent'};border:none;border-bottom:1px solid #1e1a2e;cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='${notasClienteId===r.id?'rgba(124,58,237,.18)':'transparent'}'">
@@ -805,31 +829,45 @@ function renderNotas() {
       </div>
     </div>
     <div style="background:#13101e;border-radius:12px;border:1px solid #2a2440;display:flex;flex-direction:column">
-      ${clienteActual ? `
-      <div style="padding:16px 20px;border-bottom:1px solid #2a2440;display:flex;align-items:center;gap:10px">
-        <div class="avatar" style="background:${aColor(clienteActual.nombre)}">${esc(clienteActual.nombre.slice(0,2).toUpperCase())}</div>
-        <div><div style="font-size:15px;font-weight:700">${esc(clienteActual.nombre)}</div><div style="font-size:12px;color:#6b6488">${esc(clienteActual.telefono||'')}${clienteActual.ubicacion?' · '+esc(clienteActual.ubicacion):''}</div></div>
+      <div style="padding:14px 20px;border-bottom:1px solid #2a2440;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:700;color:#e8e4f4">Todas las notas</div>
+        <div style="font-size:11px;color:#6b6488">${notasAllFeed.length} nota(s)</div>
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-height:200px">
-        ${historial.length === 0 ? '<div style="color:#6b6488;font-size:13px;padding:20px 0">Sin notas aún. Escribe la primera abajo.</div>' :
-          historial.map(n => `
-          <div style="background:#0d0b14;border-radius:8px;padding:12px 14px;border:1px solid #1e1a2e">
-            <div style="font-size:12px;color:#6b6488;margin-bottom:5px">${n.fecha}</div>
-            <div style="font-size:13px;color:#e8e4f4;white-space:pre-wrap">${esc(n.texto)}</div>
-          </div>`).join('')}
+        ${notasAllFeed.length === 0 ? '<div style="color:#6b6488;font-size:13px;padding:20px 0">Sin notas aún. Selecciona un registro y escribe la primera nota.</div>' :
+          notasAllFeed.map(n => {
+            const rec = records.find(r => r.id === n.registro_id);
+            const nombre = rec ? rec.nombre : 'Desconocido';
+            const isSelected = notasClienteId === n.registro_id;
+            return `
+            <div style="background:#0d0b14;border-radius:8px;padding:12px 14px;border:1px solid ${isSelected?'rgba(124,58,237,.6)':'#1e1a2e'};transition:border-color .15s">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <div class="avatar avatar-sm" style="background:${aColor(nombre)}">${esc(nombre.slice(0,2).toUpperCase())}</div>
+                <div style="font-size:12px;font-weight:600;color:#9b6dff">${esc(nombre)}</div>
+                <div style="font-size:11px;color:#6b6488;margin-left:auto">${n.fecha}</div>
+              </div>
+              <div style="font-size:13px;color:#e8e4f4;white-space:pre-wrap">${esc(n.texto)}</div>
+            </div>`;
+          }).join('')}
       </div>
-      <div style="padding:14px 20px;border-top:1px solid #2a2440;display:flex;gap:10px">
-        <textarea id="nota-input" class="form-input" placeholder="Escribe una nota…" style="flex:1;resize:none;height:72px"></textarea>
-        <button class="btn-primary" onclick="guardarNota()" style="align-self:flex-end;padding:10px 16px">Guardar</button>
+      ${clienteActual ? `
+      <div style="padding:14px 20px;border-top:1px solid #2a2440">
+        <div style="font-size:11px;color:#9b6dff;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Nueva nota para ${esc(clienteActual.nombre)}</div>
+        <div style="display:flex;gap:10px">
+          <textarea id="nota-input" class="form-input" placeholder="Escribe una nota…" style="flex:1;resize:none;height:64px"></textarea>
+          <button class="btn-primary" onclick="guardarNota()" style="align-self:flex-end;padding:10px 16px">Guardar</button>
+        </div>
       </div>` : `
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6b6488;font-size:14px">Selecciona un registro para ver sus notas</div>`}
+      <div style="padding:14px 20px;border-top:1px solid #2a2440;color:#6b6488;font-size:12px;text-align:center">
+        ← Selecciona un registro para agregar una nota
+      </div>`}
     </div>
   </div>`;
 }
 async function selectNotasCliente(id) {
   notasClienteId = id;
   renderAll();
-  await loadNotas(id);
+  await loadAllNotas();
   renderAll();
 }
 async function guardarNota() {
@@ -841,7 +879,7 @@ async function guardarNota() {
       contenido: txt
     }]);
     if (error) throw error;
-    await loadNotas(notasClienteId);
+    await loadAllNotas();
     toast('Nota guardada');
     renderAll();
   } catch(e) {
