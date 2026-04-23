@@ -1083,38 +1083,38 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
 .plan-name-hdr h2{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.2px}
 .plan-name-hdr p{font-size:8px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;margin-top:2px}
 .plan-body{border:1px solid #e2e8f0;border-top:none;border-radius:0 0 7px 7px;overflow:hidden}
-.feats-section{padding:8px 16px 6px;display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
-.feat{font-size:10px;color:#475569;padding:2px 0;border-bottom:1px solid #f8fafc;display:flex;align-items:flex-start;gap:5px}
-.feat:last-child{border-bottom:none}
-.feat::before{content:"✓";color:#22c55e;font-weight:700;flex-shrink:0}
-.plan-price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#f8fafc;border-top:1px solid #e2e8f0}
-.plan-price-row .lbl{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:1px}
-.plan-price-row .vals{display:flex;gap:20px;align-items:baseline}
-.plan-price-row .impl{font-size:13px;font-weight:700;color:#0f172a}
-.plan-price-row .mens{font-size:11px;color:#6d28d9;font-weight:600}
-.summary-box{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-top:14px}
-.summary-hdr{background:#0f172a;padding:8px 16px;display:flex;justify-content:space-between}
-.summary-hdr span{font-size:8px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:2px}
-.summary-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.summary-col{padding:10px 16px}
-.summary-col:first-child{border-right:1px solid #e2e8f0}
-.s-title{font-size:8px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
-.price-line{display:flex;justify-content:space-between;padding:3px 0;font-size:10px;border-bottom:1px solid #f8fafc}
-.price-line:last-child{border-bottom:none}
-.price-line .lbl{color:#64748b}
-.price-line .amt{font-weight:500;color:#0f172a}
-.price-line.plan-row .lbl{color:#374151;font-weight:600}
-.price-line.plan-row .amt{color:#374151}
-.price-line.disc .lbl,.price-line.disc .amt{color:#16a34a}
-.price-line.iva .lbl{color:#94a3b8;font-style:italic}
-.price-line.iva .amt{color:#94a3b8}
-.price-line.subtotal{border-top:1px dashed #cbd5e1;margin-top:2px;padding-top:5px}
-.price-line.subtotal .lbl{color:#475569;font-weight:600}
-.price-line.subtotal .amt{font-weight:600;color:#0f172a}
-.price-line.grand-total{border-top:2px solid #0f172a;margin-top:4px;padding-top:6px;font-weight:700;font-size:12px}
-.price-line.grand-total .lbl{color:#0f172a}
-.price-line.grand-total .amt{color:#0f172a;font-size:13px}
-.footer{padding:8px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:9px;color:#94a3b8}
+.plan-card{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:22px}
+.plan-card-hdr{background:linear-gradient(135deg,#0a0a0f 0%,#2d1066 100%);padding:14px 20px}
+.plan-card-hdr h2{font-size:15px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+.plan-card-hdr p{font-size:8px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:2px;margin-top:3px}
+.feats-grid{padding:12px 20px 10px;display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;border-bottom:1px solid #f1f5f9}
+.feat{font-size:10px;color:#475569;padding:3px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.feat::before{content:"✓";color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px}
+.plan-tag{padding:10px 20px;background:#fafafa;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9}
+.plan-tag .tag-lbl{font-size:8px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px}
+.plan-tag .tag-prices{display:flex;align-items:baseline;gap:14px}
+.plan-tag .tag-impl{font-size:14px;font-weight:700;color:#0f172a}
+.plan-tag .tag-impl-lbl{font-size:8px;font-weight:400;color:#94a3b8;margin-left:3px}
+.plan-tag .tag-mens{font-size:11px;font-weight:600;color:#6d28d9}
+.plan-tag .tag-mens-lbl{font-size:8px;font-weight:400;color:#94a3b8;margin-left:2px}
+.summary{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+.summary-hdr{background:#0f172a;padding:11px 20px}
+.summary-hdr span{font-size:9px;font-weight:700;color:#fff;letter-spacing:2.5px;text-transform:uppercase}
+.s-section{padding:14px 20px}
+.s-section+.s-section{border-top:1px solid #f1f5f9;padding-top:14px}
+.s-sec-title{font-size:8px;font-weight:700;color:#94a3b8;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.s-row{display:flex;justify-content:space-between;padding:4px 0;font-size:10px}
+.s-row .l{color:#64748b}
+.s-row .v{font-weight:500;color:#0f172a}
+.s-row.plan .l{color:#374151;font-weight:600}
+.s-row.plan .v{color:#374151;font-weight:600}
+.s-row.disc .l,.s-row.disc .v{color:#16a34a}
+.s-row.iva .l,.s-row.iva .v{color:#94a3b8;font-style:italic}
+.s-sep{border:none;border-top:1px dashed #e2e8f0;margin:6px 0}
+.s-total{display:flex;justify-content:space-between;padding:10px 0 2px;border-top:2px solid #0f172a;margin-top:6px}
+.s-total .l{font-size:12px;font-weight:700;color:#0f172a}
+.s-total .v{font-size:14px;font-weight:700;color:#0f172a}
+.footer{padding:9px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:9px;color:#94a3b8}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body>
 
@@ -1137,46 +1137,42 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
   </div>
 
   <div class="sec">Servicios cotizados</div>
-  ${selPlanes.map((p,i) => {
+  ${selPlanes.map(p => {
     const pFeats = (p.features||[]).map(f => `<div class="feat">${f}</div>`).join('');
     return `
-  <div class="plan-body" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:18px">
-    <div class="plan-name-hdr" style="border-radius:0">
-      <h2>${p.nombre}</h2>
-      <p>Synapse Digital Solutions</p>
-    </div>
-    <div class="feats-section">${pFeats}</div>
-    <div class="plan-price-row">
-      <span class="lbl">Precio</span>
-      <span class="vals">
-        <span class="impl">${fmt(p.implementacion)} <span style="font-size:9px;font-weight:400;color:#94a3b8">implementación</span></span>
-        ${p.mensual > 0 ? `<span class="mens">+ ${fmt(p.mensual)}<span style="font-size:9px;font-weight:400;color:#94a3b8"> / mes</span></span>` : ''}
+  <div class="plan-card">
+    <div class="plan-card-hdr"><h2>${p.nombre}</h2><p>Synapse Digital Solutions</p></div>
+    <div class="feats-grid">${pFeats}</div>
+    <div class="plan-tag">
+      <span class="tag-lbl">Precio base</span>
+      <span class="tag-prices">
+        <span><span class="tag-impl">${fmt(p.implementacion)}</span><span class="tag-impl-lbl">implementación</span></span>
+        ${p.mensual > 0 ? `<span><span class="tag-mens">+ ${fmt(p.mensual)}</span><span class="tag-mens-lbl">/mes</span></span>` : ''}
       </span>
     </div>
   </div>`;
   }).join('')}
 
-  <div class="summary-box">
-    <div class="summary-hdr">
-      <span>Resumen de la cotización</span>
+  <div class="summary">
+    <div class="summary-hdr"><span>Resumen de la cotización</span></div>
+
+    <div class="s-section">
+      <div class="s-sec-title">Implementación — Pago único</div>
+      ${selPlanes.map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(p.implementacion)}</span></div>`).join('')}
+      ${selPlanes.length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal</span><span class="v">${fmt(implSubtotal)}</span></div>` : ''}
+      ${descPct > 0 ? `<div class="s-row disc"><span class="l">Descuento (${descPct}%)</span><span class="v">− ${fmt(implDesc)}</span></div>` : ''}
+      <div class="s-row iva"><span class="l">IVA (16%)</span><span class="v">+ ${fmt(implIVA)}</span></div>
+      <div class="s-total"><span class="l">Total implementación</span><span class="v">${fmt(implTotal)}</span></div>
     </div>
-    <div class="summary-body">
-      <div class="summary-col">
-        <div class="s-title">Implementación — Pago único</div>
-        ${selPlanes.map(p => `<div class="price-line plan-row"><span class="lbl">${p.nombre}</span><span class="amt">${fmt(p.implementacion)}</span></div>`).join('')}
-        ${selPlanes.length > 1 ? `<div class="price-line subtotal"><span class="lbl">Subtotal</span><span class="amt">${fmt(implSubtotal)}</span></div>` : ''}
-        ${descPct > 0 ? `<div class="price-line disc"><span class="lbl">Descuento (${descPct}%)</span><span class="amt">− ${fmt(implDesc)}</span></div>` : ''}
-        <div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(implIVA)}</span></div>
-        <div class="price-line grand-total"><span class="lbl">Total implementación</span><span class="amt">${fmt(implTotal)}</span></div>
-      </div>
-      <div class="summary-col">
-        <div class="s-title">Mensualidad recurrente</div>
-        ${selPlanes.map(p => `<div class="price-line plan-row"><span class="lbl">${p.nombre}</span><span class="amt">${p.mensual > 0 ? fmt(p.mensual) : '—'}</span></div>`).join('')}
-        ${selPlanes.length > 1 && mensSubtotal > 0 ? `<div class="price-line subtotal"><span class="lbl">Subtotal</span><span class="amt">${fmt(mensSubtotal)}</span></div>` : ''}
-        ${mensSubtotal > 0 ? `<div class="price-line iva"><span class="lbl">IVA (16%)</span><span class="amt">${fmt(mensIVA)}</span></div>` : ''}
-        ${mensSubtotal > 0 ? `<div class="price-line grand-total"><span class="lbl">Total mensual</span><span class="amt">${fmt(mensTotal)}</span></div>` : '<div class="price-line grand-total"><span class="lbl">Total mensual</span><span class="amt">—</span></div>'}
-      </div>
-    </div>
+
+    ${mensSubtotal > 0 ? `
+    <div class="s-section">
+      <div class="s-sec-title">Mensualidad recurrente</div>
+      ${selPlanes.filter(p => p.mensual > 0).map(p => `<div class="s-row plan"><span class="l">${p.nombre}</span><span class="v">${fmt(p.mensual)}/mes</span></div>`).join('')}
+      ${selPlanes.filter(p => p.mensual > 0).length > 1 ? `<hr class="s-sep"><div class="s-row"><span class="l">Subtotal mensual</span><span class="v">${fmt(mensSubtotal)}/mes</span></div>` : ''}
+      <div class="s-row iva"><span class="l">IVA (16%)</span><span class="v">+ ${fmt(mensIVA)}/mes</span></div>
+      <div class="s-total"><span class="l">Total mensual</span><span class="v">${fmt(mensTotal)}/mes</span></div>
+    </div>` : ''}
   </div>
 </div>
 
