@@ -434,7 +434,9 @@ function savePlanEditor() {
   const impl = Math.abs(parseInt(document.getElementById('pe-impl').value)) || 0;
   const mens = Math.abs(parseInt(document.getElementById('pe-mens').value)) || 0;
   if (!nombre) { alert('El nombre es obligatorio.'); return; }
-  const features = editingFeatures.filter(f => f.trim());
+  // Read features directly from DOM to avoid oninput sync issues
+  const featureInputs = document.querySelectorAll('#pe-features input');
+  const features = Array.from(featureInputs).map(inp => inp.value.trim()).filter(f => f);
   if (editingPlanId) {
     const p = PLANES.find(x => x.id === editingPlanId);
     p.nombre = nombre; p.implementacion = impl; p.mensual = mens; p.features = features;
@@ -628,10 +630,11 @@ async function deleteCotizacion(cotId, registroId) {
   } catch(e) { toast('Error: ' + e.message); }
 }
 async function dbAddCotizacion(registroId, cot) {
-  const { error } = await _supa.from('cotizaciones').insert([{
+  const { data, error } = await _supa.from('cotizaciones').insert([{
     registro_id: registroId, folio: cot.folio, plan: cot.plan, monto: cot.monto, fecha: cot.fecha
-  }]);
+  }]).select('id');
   if (error) throw error;
+  return data?.[0]?.id;
 }
 
 // ── NAV ──
@@ -1197,12 +1200,17 @@ body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#fff;font
   w.document.close();
 
   const cotData = {folio, plan: planNombre, monto: implTotal, fecha: new Date().toLocaleDateString('es-MX')};
-  try { await dbAddCotizacion(r.id, cotData); } catch(e) { console.error('Error guardando cotización:', e); }
-  records = records.map(rec => rec.id === r.id
-    ? {...rec, cotizaciones: [...(rec.cotizaciones||[]), cotData]}
-    : rec);
-  closeModal('modal-quote'); renderAll();
-  toast(`Cotización #${folio} generada`);
+  try {
+    const newCotId = await dbAddCotizacion(r.id, cotData);
+    records = records.map(rec => rec.id === r.id
+      ? {...rec, cotizaciones: [...(rec.cotizaciones||[]), {...cotData, id: newCotId}]}
+      : rec);
+    closeModal('modal-quote'); renderAll();
+    toast(`Cotización #${folio} generada`);
+  } catch(e) {
+    console.error('Error guardando cotización:', e);
+    toast('Error al guardar la cotización: ' + e.message);
+  }
 }
 
 // ── IMPORT / EXPORT ──
