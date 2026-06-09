@@ -22,7 +22,11 @@ function renderAll() {
   renderHero();
   renderEstadisticas();
   renderServicios();
-  renderPrecios();
+  renderPromociones();
+  renderBanner();
+  renderGaleria();
+  renderNosotros();
+  renderContacto();
 }
 
 // ── Navigation ──
@@ -35,18 +39,21 @@ function showPanel(name) {
     hero: 'Hero principal',
     estadisticas: 'Estadísticas',
     servicios: 'Servicios',
-    precios: 'Precios',
+    promociones: 'Promociones',
+    banner: 'Banner superior',
+    galeria: 'Galería',
+    nosotros: 'Nosotros',
+    contacto: 'Contacto',
   }[name];
 }
 
 // ── Save ──
 async function saveSection(key) {
-  const btn = document.querySelector(`#panel-${key} .btn-save`);
-  const status = document.getElementById(`status-${key}`);
+  const btns = [...document.querySelectorAll(`#panel-${key} .btn-save`)];
+  const statuses = [...document.querySelectorAll(`#panel-${key} #status-${key}`)];
 
-  btn.disabled = true;
-  status.textContent = 'Guardando…';
-  status.className = 'save-status loading';
+  btns.forEach(b => b.disabled = true);
+  statuses.forEach(s => { s.textContent = 'Guardando…'; s.className = 'save-status loading'; });
 
   const data = collectSection(key);
 
@@ -62,8 +69,7 @@ async function saveSection(key) {
 
     if (res.ok) {
       content[key] = data;
-      status.textContent = '✓ Guardado';
-      status.className = 'save-status ok';
+      statuses.forEach(s => { s.textContent = '✓ Guardado'; s.className = 'save-status ok'; });
       showToast('Cambios guardados correctamente', 'success');
     } else if (res.status === 401) {
       logout();
@@ -71,13 +77,12 @@ async function saveSection(key) {
       throw new Error();
     }
   } catch {
-    status.textContent = 'Error al guardar';
-    status.className = 'save-status err';
+    statuses.forEach(s => { s.textContent = 'Error al guardar'; s.className = 'save-status err'; });
     showToast('No se pudo guardar. Intenta de nuevo.', 'error');
   }
 
-  btn.disabled = false;
-  setTimeout(() => { status.className = 'save-status'; }, 3000);
+  btns.forEach(b => b.disabled = false);
+  setTimeout(() => { statuses.forEach(s => s.className = 'save-status'); }, 3000);
 }
 
 // ── Collect form data ──
@@ -101,8 +106,36 @@ function collectSection(key) {
     return getServicios();
   }
 
-  if (key === 'precios') {
-    return getPrecios();
+  if (key === 'promociones') {
+    return getPromociones();
+  }
+
+  if (key === 'galeria') {
+    return getGaleria();
+  }
+
+  if (key === 'banner') {
+    return {
+      activo: document.getElementById('banner-activo').checked,
+      texto: val('banner-texto'),
+      link: val('banner-link'),
+    };
+  }
+
+  if (key === 'nosotros') {
+    return {
+      mision: val('nosotros-mision'),
+      valores: getValores(),
+    };
+  }
+
+  if (key === 'contacto') {
+    return {
+      telefono1: val('contacto-telefono1'),
+      telefono2: val('contacto-telefono2'),
+      email: val('contacto-email'),
+      ubicacion: val('contacto-ubicacion'),
+    };
   }
 }
 
@@ -237,6 +270,10 @@ function renderServicios() {
         ${buildTagsEditor('svc-pills-' + i, s.pills)}
         <div class="tags-hint">Escribe y presiona Enter o coma para agregar</div>
       </div>
+      <div class="field">
+        <label>Imagen del servicio (opcional — si no se sube, se muestra la ilustración por defecto)</label>
+        ${buildImageUploader('svc-img-' + i, s.imagen_url)}
+      </div>
       <div class="save-row">
         <button class="btn-save" onclick="saveServicio(${i})">Guardar servicio</button>
         <span class="save-status" id="status-svc-${i}"></span>
@@ -244,6 +281,7 @@ function renderServicios() {
     `;
     container.appendChild(card);
     initTagsEditor('svc-pills-' + i);
+    initImageUploader('svc-img-' + i);
   });
 }
 
@@ -255,6 +293,7 @@ function getServicios() {
     descripcion: card.querySelector('.svc-descripcion').value.trim(),
     features: card.querySelector('.svc-features').value.split('\n').map(l => l.trim()).filter(Boolean),
     pills: getTagsFromEditor('svc-pills-' + i),
+    imagen_url: getUploaderUrl('svc-img-' + i),
   }));
 }
 
@@ -298,126 +337,246 @@ async function saveServicio(index) {
   setTimeout(() => { status.className = 'save-status'; }, 3000);
 }
 
-// ── Precios ──
-const DEFAULT_PRECIOS = [
-  {
-    nombre: 'Básico',
-    precio: '$8,500',
-    descripcion: 'Ideal para negocios que necesitan presencia web profesional.',
-    features: ['Landing page de hasta 5 secciones', 'Diseño responsivo', 'SEO básico', 'Formulario de contacto', '1 ronda de revisiones'],
-    destacado: false,
-  },
-  {
-    nombre: 'Profesional',
-    precio: '$15,000',
-    descripcion: 'Para empresas que quieren impacto real y más páginas.',
-    features: ['Hasta 8 páginas', 'Diseño premium a medida', 'SEO avanzado', 'Integración WhatsApp', 'Blog o catálogo', '3 rondas de revisiones', 'Soporte 30 días'],
-    destacado: true,
-  },
-  {
-    nombre: 'Empresarial',
-    precio: 'A cotizar',
-    descripcion: 'Solución completa con CRM, estrategia y soporte continuo.',
-    features: ['Todo lo del plan Profesional', 'CRM a la medida', 'Estrategia digital', 'Automatizaciones', 'Soporte continuo', 'Capacitación del equipo'],
-    destacado: false,
-  },
-];
+// ── Upload de medios ──
+async function uploadFile(file) {
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type,
+      'X-Filename': file.name,
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    body: file
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Error al subir el archivo');
+  }
+  const data = await res.json();
+  return data.url;
+}
 
-function renderPrecios() {
-  const precios = content.precios || DEFAULT_PRECIOS;
-  const container = document.getElementById('precios-list');
+function buildImageUploader(id, currentUrl, accept = 'image/*') {
+  const isVideo = currentUrl && /\.(mp4|webm|mov)$/i.test(currentUrl);
+  const previewHtml = currentUrl
+    ? (isVideo
+        ? `<video src="${esc(currentUrl)}" muted></video>`
+        : `<img src="${esc(currentUrl)}" alt="">`)
+    : `<span class="img-placeholder">Sin archivo</span>`;
+  return `
+    <div class="img-uploader" id="${id}" data-url="${esc(currentUrl || '')}">
+      <div class="img-preview">${previewHtml}</div>
+      <input type="file" class="img-file-input" accept="${accept}">
+      <span class="img-upload-status"></span>
+    </div>
+  `;
+}
+
+function initImageUploader(id) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const input = container.querySelector('.img-file-input');
+  const status = container.querySelector('.img-upload-status');
+  const preview = container.querySelector('.img-preview');
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+    status.textContent = 'Subiendo…';
+    status.className = 'img-upload-status';
+    try {
+      const url = await uploadFile(file);
+      container.dataset.url = url;
+      const isVideo = file.type.startsWith('video/');
+      preview.innerHTML = isVideo
+        ? `<video src="${esc(url)}" muted></video>`
+        : `<img src="${esc(url)}" alt="">`;
+      status.textContent = '✓ Subido';
+      status.className = 'img-upload-status ok';
+    } catch (e) {
+      status.textContent = e.message || 'Error al subir';
+      status.className = 'img-upload-status err';
+    }
+  });
+}
+
+function getUploaderUrl(id) {
+  return document.getElementById(id)?.dataset.url || '';
+}
+
+// ── Promociones ──
+function renderPromociones() {
+  const promos = content.promociones || [];
+  const container = document.getElementById('promociones-list');
   container.innerHTML = '';
 
-  precios.forEach((p, i) => {
+  promos.forEach((p, i) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <div class="card-title">
-        <span class="card-title-dot" style="background:${p.destacado ? 'var(--purple)' : 'var(--muted)'}"></span>
-        Plan ${esc(p.nombre)} ${p.destacado ? '<span style="color:var(--purple);font-size:.7rem;margin-left:.5rem">★ Destacado</span>' : ''}
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label>Nombre del plan</label>
-          <input type="text" class="precio-nombre" value="${esc(p.nombre)}">
-        </div>
-        <div class="field">
-          <label>Precio</label>
-          <input type="text" class="precio-valor" value="${esc(p.precio)}" placeholder="$15,000 o 'A cotizar'">
-        </div>
+        <span class="card-title-dot" style="background:var(--purple)"></span>
+        Promoción ${i + 1}
       </div>
       <div class="field">
-        <label>Descripción corta</label>
-        <input type="text" class="precio-desc" value="${esc(p.descripcion)}">
+        <label>Título</label>
+        <input type="text" class="promo-titulo" value="${esc(p.titulo)}">
       </div>
       <div class="field">
-        <label>Características incluidas (una por línea)</label>
-        <textarea class="precio-features" rows="6">${p.features.join('\n')}</textarea>
+        <label>Descripción</label>
+        <textarea class="promo-descripcion">${esc(p.descripcion)}</textarea>
       </div>
       <div class="field">
-        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer">
-          <input type="checkbox" class="precio-destacado" ${p.destacado ? 'checked' : ''} style="width:auto;margin:0">
-          Marcar como plan destacado (resaltado visualmente)
-        </label>
+        <label>Enlace (opcional)</label>
+        <input type="text" class="promo-link" value="${esc(p.link)}" placeholder="https://...">
       </div>
+      <div class="field">
+        <label>Imagen</label>
+        ${buildImageUploader('promo-img-' + i, p.imagen_url)}
+      </div>
+      <button class="btn-remove-item" onclick="removePromocion(${i})">Eliminar promoción</button>
       <div class="save-row">
-        <button class="btn-save" onclick="savePrecio(${i})">Guardar plan</button>
-        <span class="save-status" id="status-precio-${i}"></span>
+        <button class="btn-save" onclick="saveSection('promociones')">Guardar cambios</button>
+        <span class="save-status" id="status-promociones"></span>
       </div>
     `;
     container.appendChild(card);
+    initImageUploader('promo-img-' + i);
   });
 }
 
-function getPrecios() {
-  const cards = [...document.querySelectorAll('#precios-list .card')];
-  return cards.map(card => ({
-    nombre: card.querySelector('.precio-nombre').value.trim(),
-    precio: card.querySelector('.precio-valor').value.trim(),
-    descripcion: card.querySelector('.precio-desc').value.trim(),
-    features: card.querySelector('.precio-features').value.split('\n').map(l => l.trim()).filter(Boolean),
-    destacado: card.querySelector('.precio-destacado').checked,
+function getPromociones() {
+  const cards = [...document.querySelectorAll('#promociones-list .card')];
+  return cards.map((card, i) => ({
+    titulo: card.querySelector('.promo-titulo').value.trim(),
+    descripcion: card.querySelector('.promo-descripcion').value.trim(),
+    link: card.querySelector('.promo-link').value.trim(),
+    imagen_url: getUploaderUrl('promo-img-' + i),
   }));
 }
 
-async function savePrecio(index) {
-  const btn = document.querySelector(`#precios-list .card:nth-child(${index + 1}) .btn-save`);
-  const status = document.getElementById(`status-precio-${index}`);
+function addPromocion() {
+  content.promociones = getPromociones();
+  content.promociones.push({ titulo: '', descripcion: '', link: '', imagen_url: '' });
+  renderPromociones();
+}
 
-  btn.disabled = true;
-  status.textContent = 'Guardando…';
-  status.className = 'save-status loading';
+function removePromocion(index) {
+  const promos = getPromociones();
+  promos.splice(index, 1);
+  content.promociones = promos;
+  renderPromociones();
+}
 
-  const data = getPrecios();
+// ── Banner ──
+function renderBanner() {
+  const b = content.banner || {};
+  document.getElementById('banner-activo').checked = !!b.activo;
+  setVal('banner-texto', b.texto || '');
+  setVal('banner-link', b.link || '');
+}
 
-  try {
-    const res = await fetch('/api/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TOKEN}`
-      },
-      body: JSON.stringify({ key: 'precios', data })
-    });
+// ── Galería ──
+function renderGaleria() {
+  const items = content.galeria || [];
+  const container = document.getElementById('galeria-list');
+  container.innerHTML = '';
 
-    if (res.ok) {
-      content.precios = data;
-      status.textContent = '✓ Guardado';
-      status.className = 'save-status ok';
-      showToast('Plan guardado correctamente', 'success');
-    } else if (res.status === 401) {
-      logout();
-    } else {
-      throw new Error();
-    }
-  } catch {
-    status.textContent = 'Error al guardar';
-    status.className = 'save-status err';
-    showToast('No se pudo guardar. Intenta de nuevo.', 'error');
-  }
+  items.forEach((g, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-title">
+        <span class="card-title-dot" style="background:var(--cyan)"></span>
+        Elemento ${i + 1}
+      </div>
+      <div class="field">
+        <label>Foto o video</label>
+        ${buildImageUploader('gal-img-' + i, g.url, 'image/*,video/*')}
+      </div>
+      <div class="field">
+        <label>Descripción (opcional)</label>
+        <input type="text" class="gal-caption" value="${esc(g.caption)}">
+      </div>
+      <button class="btn-remove-item" onclick="removeGaleriaItem(${i})">Eliminar elemento</button>
+      <div class="save-row">
+        <button class="btn-save" onclick="saveSection('galeria')">Guardar cambios</button>
+        <span class="save-status" id="status-galeria"></span>
+      </div>
+    `;
+    container.appendChild(card);
+    initImageUploader('gal-img-' + i);
+  });
+}
 
-  btn.disabled = false;
-  setTimeout(() => { status.className = 'save-status'; }, 3000);
+function getGaleria() {
+  const cards = [...document.querySelectorAll('#galeria-list .card')];
+  return cards.map((card, i) => {
+    const url = getUploaderUrl('gal-img-' + i);
+    return {
+      url,
+      tipo: /\.(mp4|webm|mov)$/i.test(url) ? 'video' : 'imagen',
+      caption: card.querySelector('.gal-caption').value.trim(),
+    };
+  });
+}
+
+function addGaleriaItem() {
+  content.galeria = getGaleria();
+  content.galeria.push({ url: '', tipo: 'imagen', caption: '' });
+  renderGaleria();
+}
+
+function removeGaleriaItem(index) {
+  const items = getGaleria();
+  items.splice(index, 1);
+  content.galeria = items;
+  renderGaleria();
+}
+
+// ── Nosotros ──
+const DEFAULT_VALORES = [
+  { titulo: '', desc: '' },
+  { titulo: '', desc: '' },
+  { titulo: '', desc: '' },
+];
+
+function renderNosotros() {
+  const n = content.nosotros || {};
+  setVal('nosotros-mision', n.mision || '');
+
+  const valores = (n.valores && n.valores.length === 3) ? n.valores : DEFAULT_VALORES;
+  const container = document.getElementById('valores-list');
+  container.innerHTML = '';
+
+  valores.forEach((v, i) => {
+    const row = document.createElement('div');
+    row.className = 'field';
+    row.style.borderTop = i > 0 ? '1px solid var(--border)' : '';
+    row.style.paddingTop = i > 0 ? '1rem' : '';
+    row.innerHTML = `
+      <label>Valor ${i + 1} — Título</label>
+      <input type="text" class="valor-titulo" value="${esc(v.titulo)}">
+      <label style="margin-top:.6rem">Valor ${i + 1} — Descripción</label>
+      <textarea class="valor-desc" rows="2">${esc(v.desc)}</textarea>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function getValores() {
+  const titulos = [...document.querySelectorAll('.valor-titulo')].map(el => el.value.trim());
+  const descs = [...document.querySelectorAll('.valor-desc')].map(el => el.value.trim());
+  return titulos.map((t, i) => ({ titulo: t, desc: descs[i] || '' }));
+}
+
+// ── Contacto ──
+function renderContacto() {
+  const c = content.contacto || {};
+  setVal('contacto-telefono1', c.telefono1 || '');
+  setVal('contacto-telefono2', c.telefono2 || '');
+  setVal('contacto-email', c.email || '');
+  setVal('contacto-ubicacion', c.ubicacion || '');
 }
 
 // ── Tags editor ──

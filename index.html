@@ -11,8 +11,80 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── CMS: Banner ── */
+    #cms-banner {
+      display: none;
+      background: linear-gradient(90deg, var(--purple), var(--violet));
+      color: #fff;
+      text-align: center;
+      padding: .65rem 1rem;
+      font-size: .85rem;
+      font-weight: 500;
+      position: relative;
+      z-index: 1000;
+    }
+    #cms-banner a { color: #fff; text-decoration: none; }
+    #cms-banner a:hover { text-decoration: underline; }
+
+    /* ── CMS: Promociones ── */
+    .cms-promos-section { padding: 4rem 1.5rem; display: none; }
+    .cms-promos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 2rem auto 0;
+    }
+    .cms-promo-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .cms-promo-media { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--surface); }
+    .cms-promo-body { padding: 1.25rem 1.5rem 1.5rem; }
+    .cms-promo-title { font-size: 1.1rem; font-weight: 700; color: var(--white); margin-bottom: .5rem; }
+    .cms-promo-desc { font-size: .9rem; color: var(--text); line-height: 1.5; margin-bottom: 1rem; }
+    .cms-promo-link {
+      display: inline-block; font-size: .85rem; font-weight: 600;
+      color: var(--violet); text-decoration: none;
+    }
+    .cms-promo-link:hover { text-decoration: underline; }
+
+    /* ── CMS: Galería ── */
+    .cms-gallery-section { padding: 4rem 1.5rem; display: none; }
+    .cms-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 2rem auto 0;
+    }
+    .cms-gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .cms-gallery-item img,
+    .cms-gallery-item video { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+    .cms-gallery-caption { padding: .6rem .9rem; font-size: .8rem; color: var(--text); }
+
+    /* ── CMS: Imagen de servicio ── */
+    .cms-svc-image { width: 100%; border-radius: 16px; display: block; object-fit: cover; max-height: 420px; }
+  </style>
 </head>
 <body>
+
+  <!-- BANNER (CMS) -->
+  <div id="cms-banner">
+    <a id="cms-banner-link" href="#" target="_blank" rel="noopener">
+      <span id="cms-banner-text"></span>
+    </a>
+  </div>
 
   <!-- SPLASH -->
 <!-- SPLASH -->
@@ -111,6 +183,13 @@
       </div>
     </section>
 
+    <!-- Promociones (CMS) -->
+    <section class="cms-promos-section" id="cms-promos-section">
+      <div class="eyebrow anim" style="justify-content:center">Promociones</div>
+      <h2 class="sec-title anim anim-d1" style="text-align:center">Ofertas especiales</h2>
+      <div class="cms-promos-grid" id="cms-promos-grid"></div>
+    </section>
+
     <!-- Números -->
     <section class="numbers">
       <div class="numbers-label">Nuestros números hablan</div>
@@ -206,6 +285,7 @@
           </div>
         </div>
         <div class="svcs-block-visual">
+          <img class="cms-svc-image" id="cms-svc-image-0" style="display:none" alt="">
           <!-- Browser mockup -->
           <div class="mb-browser">
             <div class="mb-bar">
@@ -295,6 +375,7 @@
     <section class="svcs-block svcs-block-alt anim" id="svc-crm">
       <div class="svcs-block-inner">
         <div class="svcs-block-visual">
+          <img class="cms-svc-image" id="cms-svc-image-1" style="display:none" alt="">
           <!-- Dashboard / CRM mockup -->
           <div class="mb-dashboard">
 
@@ -460,6 +541,7 @@
           </div>
         </div>
         <div class="svcs-block-visual">
+          <img class="cms-svc-image" id="cms-svc-image-2" style="display:none" alt="">
           <!-- Strategy roadmap visual -->
           <div class="mb-strategy">
             <div class="mb-strat-step">
@@ -546,7 +628,7 @@
     <section class="about-mission">
       <div class="about-mission-inner anim">
         <div class="about-mission-quote">"</div>
-        <p class="about-mission-text">Toda empresa merece una presencia digital de primer nivel. Construimos soluciones que se adaptan a ti — no al revés.</p>
+        <p class="about-mission-text" id="cms-mision">Toda empresa merece una presencia digital de primer nivel. Construimos soluciones que se adaptan a ti — no al revés.</p>
         <div class="about-mission-sig">— Synapse Digital Solutions</div>
       </div>
     </section>
@@ -559,22 +641,22 @@
           <div class="about-value-icon purple">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           </div>
-          <div class="about-value-title">Resultados primero</div>
-          <p>Cada decisión de diseño y tecnología está orientada a generar conversiones y crecimiento real para tu negocio.</p>
+          <div class="about-value-title" id="cms-valor-0-titulo">Resultados primero</div>
+          <p id="cms-valor-0-desc">Cada decisión de diseño y tecnología está orientada a generar conversiones y crecimiento real para tu negocio.</p>
         </div>
         <div class="about-value anim anim-d1">
           <div class="about-value-icon blue">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
           </div>
-          <div class="about-value-title">Tecnología moderna</div>
-          <p>Construimos con las herramientas correctas para que tu negocio escale sin fricciones ni límites técnicos.</p>
+          <div class="about-value-title" id="cms-valor-1-titulo">Tecnología moderna</div>
+          <p id="cms-valor-1-desc">Construimos con las herramientas correctas para que tu negocio escale sin fricciones ni límites técnicos.</p>
         </div>
         <div class="about-value anim anim-d2">
           <div class="about-value-icon cyan">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
-          <div class="about-value-title">Acompañamiento real</div>
-          <p>No desaparecemos después de entregar. Somos tu equipo tech de confianza antes, durante y después.</p>
+          <div class="about-value-title" id="cms-valor-2-titulo">Acompañamiento real</div>
+          <p id="cms-valor-2-desc">No desaparecemos después de entregar. Somos tu equipo tech de confianza antes, durante y después.</p>
         </div>
       </div>
     </section>
@@ -679,6 +761,13 @@
       </div>
     </section>
 
+    <!-- Galería (CMS) -->
+    <section class="cms-gallery-section" id="cms-gallery-section">
+      <div class="eyebrow anim" style="justify-content:center">Galería</div>
+      <h2 class="sec-title anim anim-d1" style="text-align:center">Nuestro trabajo</h2>
+      <div class="cms-gallery-grid" id="cms-gallery-grid"></div>
+    </section>
+
     <!-- CTA -->
     <section class="about-cta">
       <div class="eyebrow anim" style="justify-content:center">¿Listo para empezar?</div>
@@ -720,35 +809,35 @@
 
           <div class="cinfo">
 
-            <a class="crow" href="tel:+523314816421">
+            <a class="crow" href="tel:+523314816421" id="cms-telefono1">
               <div class="crow-icon purple">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.74 2.03z"/></svg>
               </div>
               <div class="crow-text">
                 <span>Teléfono / WhatsApp</span>
-                <p>+52 (33) 1481 - 6421</p>
+                <p id="cms-telefono1-text">+52 (33) 1481 - 6421</p>
               </div>
               <div class="crow-arrow">→</div>
             </a>
 
-            <a class="crow" href="tel:+523317602557">
+            <a class="crow" href="tel:+523317602557" id="cms-telefono2">
               <div class="crow-icon purple">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.42 2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.74 2.03z"/></svg>
               </div>
               <div class="crow-text">
                 <span>Teléfono / WhatsApp</span>
-                <p>+52 (33) 1760 - 2557</p>
+                <p id="cms-telefono2-text">+52 (33) 1760 - 2557</p>
               </div>
               <div class="crow-arrow">→</div>
             </a>
 
-            <a class="crow" href="mailto:contacto@synapseds.com">
+            <a class="crow" href="mailto:contacto@synapseds.com" id="cms-email">
               <div class="crow-icon cyan">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               </div>
               <div class="crow-text">
                 <span>Correo electrónico</span>
-                <p>contacto@synapseds.com</p>
+                <p id="cms-email-text">contacto@synapseds.com</p>
               </div>
               <div class="crow-arrow">→</div>
             </a>
@@ -759,7 +848,7 @@
               </div>
               <div class="crow-text">
                 <span>Ubicación</span>
-                <p>Guadalajara, Jalisco, México</p>
+                <p id="cms-ubicacion">Guadalajara, Jalisco, México</p>
               </div>
             </div>
 
@@ -854,6 +943,105 @@
           });
         }
 
+        // Banner superior
+        if (c.banner && c.banner.activo && c.banner.texto) {
+          var banner = document.getElementById('cms-banner');
+          var bannerLink = document.getElementById('cms-banner-link');
+          setText('cms-banner-text', c.banner.texto);
+          if (c.banner.link) {
+            bannerLink.href = c.banner.link;
+          } else {
+            bannerLink.removeAttribute('href');
+            bannerLink.style.cursor = 'default';
+          }
+          if (banner) banner.style.display = 'block';
+        }
+
+        // Servicios — imágenes opcionales
+        if (c.servicios) {
+          c.servicios.forEach(function(s, i) {
+            if (!s.imagen_url) return;
+            var img = document.getElementById('cms-svc-image-' + i);
+            if (!img) return;
+            img.src = s.imagen_url;
+            img.style.display = 'block';
+            var sibling = img.nextElementSibling;
+            if (sibling) sibling.style.display = 'none';
+          });
+        }
+
+        // Nosotros — misión y valores
+        if (c.nosotros) {
+          if (c.nosotros.mision) setText('cms-mision', c.nosotros.mision);
+          if (Array.isArray(c.nosotros.valores)) {
+            c.nosotros.valores.forEach(function(v, i) {
+              setText('cms-valor-' + i + '-titulo', v.titulo);
+              setText('cms-valor-' + i + '-desc', v.desc);
+            });
+          }
+        }
+
+        // Contacto
+        if (c.contacto) {
+          var ct = c.contacto;
+          if (ct.telefono1) {
+            setText('cms-telefono1-text', ct.telefono1);
+            var t1 = document.getElementById('cms-telefono1');
+            if (t1) t1.href = 'tel:' + ct.telefono1.replace(/[^\d+]/g, '');
+          }
+          if (ct.telefono2) {
+            setText('cms-telefono2-text', ct.telefono2);
+            var t2 = document.getElementById('cms-telefono2');
+            if (t2) t2.href = 'tel:' + ct.telefono2.replace(/[^\d+]/g, '');
+          }
+          if (ct.email) {
+            setText('cms-email-text', ct.email);
+            var em = document.getElementById('cms-email');
+            if (em) em.href = 'mailto:' + ct.email;
+          }
+          if (ct.ubicacion) setText('cms-ubicacion', ct.ubicacion);
+        }
+
+        // Promociones
+        if (Array.isArray(c.promociones) && c.promociones.length) {
+          var promosGrid = document.getElementById('cms-promos-grid');
+          var promosSection = document.getElementById('cms-promos-section');
+          c.promociones.forEach(function(p) {
+            var card = document.createElement('div');
+            card.className = 'cms-promo-card';
+            var html = '';
+            if (p.imagen_url) html += '<img class="cms-promo-media" src="' + p.imagen_url + '" alt="">';
+            html += '<div class="cms-promo-body">';
+            if (p.titulo) html += '<div class="cms-promo-title">' + escapeHtml(p.titulo) + '</div>';
+            if (p.descripcion) html += '<div class="cms-promo-desc">' + escapeHtml(p.descripcion) + '</div>';
+            if (p.link) html += '<a class="cms-promo-link" href="' + p.link + '" target="_blank" rel="noopener">Más información →</a>';
+            html += '</div>';
+            card.innerHTML = html;
+            promosGrid.appendChild(card);
+          });
+          if (promosSection) promosSection.style.display = 'block';
+        }
+
+        // Galería
+        if (Array.isArray(c.galeria) && c.galeria.length) {
+          var galGrid = document.getElementById('cms-gallery-grid');
+          var galSection = document.getElementById('cms-gallery-section');
+          c.galeria.forEach(function(item) {
+            var el = document.createElement('div');
+            el.className = 'cms-gallery-item';
+            var html = '';
+            if (item.tipo === 'video') {
+              html += '<video src="' + item.url + '" controls></video>';
+            } else {
+              html += '<img src="' + item.url + '" alt="' + (item.caption ? escapeHtml(item.caption) : '') + '">';
+            }
+            if (item.caption) html += '<div class="cms-gallery-caption">' + escapeHtml(item.caption) + '</div>';
+            el.innerHTML = html;
+            galGrid.appendChild(el);
+          });
+          if (galSection) galSection.style.display = 'block';
+        }
+
       } catch(e) {
         // Falla silenciosa — el contenido original del HTML permanece
       }
@@ -861,6 +1049,12 @@
       function setText(id, text) {
         var el = document.getElementById(id);
         if (el && text) el.textContent = text;
+      }
+
+      function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
       }
     })();
   </script>

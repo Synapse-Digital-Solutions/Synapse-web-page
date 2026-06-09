@@ -80,51 +80,48 @@ INSERT INTO content (key, data) VALUES (
   ]'::jsonb
 ) ON CONFLICT (key) DO NOTHING;
 
--- Datos iniciales: Precios
+-- Datos iniciales: Banner superior
 INSERT INTO content (key, data) VALUES (
-  'precios',
-  '[
-    {
-      "nombre": "Básico",
-      "precio": "$8,500",
-      "descripcion": "Ideal para negocios que necesitan presencia web profesional.",
-      "features": [
-        "Landing page de hasta 5 secciones",
-        "Diseño responsivo",
-        "SEO básico",
-        "Formulario de contacto",
-        "1 ronda de revisiones"
-      ],
-      "destacado": false
-    },
-    {
-      "nombre": "Profesional",
-      "precio": "$15,000",
-      "descripcion": "Para empresas que quieren impacto real y más páginas.",
-      "features": [
-        "Hasta 8 páginas",
-        "Diseño premium a medida",
-        "SEO avanzado",
-        "Integración WhatsApp",
-        "Blog o catálogo",
-        "3 rondas de revisiones",
-        "Soporte 30 días"
-      ],
-      "destacado": true
-    },
-    {
-      "nombre": "Empresarial",
-      "precio": "A cotizar",
-      "descripcion": "Solución completa con CRM, estrategia y soporte continuo.",
-      "features": [
-        "Todo lo del plan Profesional",
-        "CRM a la medida",
-        "Estrategia digital",
-        "Automatizaciones",
-        "Soporte continuo",
-        "Capacitación del equipo"
-      ],
-      "destacado": false
-    }
-  ]'::jsonb
+  'banner',
+  '{
+    "activo": false,
+    "texto": "",
+    "link": ""
+  }'::jsonb
+) ON CONFLICT (key) DO NOTHING;
+
+-- Datos iniciales: Promociones / Anuncios (vacío por defecto)
+INSERT INTO content (key, data) VALUES (
+  'promociones',
+  '[]'::jsonb
+) ON CONFLICT (key) DO NOTHING;
+
+-- Datos iniciales: Galería (vacío por defecto)
+INSERT INTO content (key, data) VALUES (
+  'galeria',
+  '[]'::jsonb
+) ON CONFLICT (key) DO NOTHING;
+
+-- Datos iniciales: Nosotros (misión y valores)
+INSERT INTO content (key, data) VALUES (
+  'nosotros',
+  '{
+    "mision": "Toda empresa merece una presencia digital de primer nivel. Construimos soluciones que se adaptan a ti — no al revés.",
+    "valores": [
+      {"titulo": "Resultados primero", "desc": "Cada decisión de diseño y tecnología está orientada a generar conversiones y crecimiento real para tu negocio."},
+      {"titulo": "Tecnología moderna", "desc": "Construimos con las herramientas correctas para que tu negocio escale sin fricciones ni límites técnicos."},
+      {"titulo": "Acompañamiento real", "desc": "No desaparecemos después de entregar. Somos tu equipo tech de confianza antes, durante y después."}
+    ]
+  }'::jsonb
+) ON CONFLICT (key) DO NOTHING;
+
+-- Datos iniciales: Contacto
+INSERT INTO content (key, data) VALUES (
+  'contacto',
+  '{
+    "telefono1": "+52 (33) 1481 - 6421",
+    "telefono2": "+52 (33) 1760 - 2557",
+    "email": "contacto@synapseds.com",
+    "ubicacion": "Guadalajara, Jalisco, México"
+  }'::jsonb
 ) ON CONFLICT (key) DO NOTHING;
