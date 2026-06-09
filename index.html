@@ -63,19 +63,19 @@
       <div class="hero-left">
         <div class="hero-badge">
           <span class="badge-dot"></span>
-          Tecnología que conecta negocios
+          <span id="cms-hero-badge">Tecnología que conecta negocios</span>
         </div>
         <h1 class="hero-h1">
-          <span class="line"><span>Tu presencia digital,</span></span>
-          <span class="line"><span><em>redefinida.</em></span></span>
+          <span class="line"><span id="cms-hero-titulo1">Tu presencia digital,</span></span>
+          <span class="line"><span><em id="cms-hero-titulo2">redefinida.</em></span></span>
         </h1>
-        <p class="hero-p">
+        <p class="hero-p" id="cms-hero-subtitulo">
           Diseñamos páginas web que convierten y CRMs que organizan tu negocio.
           Soluciones a la medida, resultados desde el día uno.
         </p>
         <div class="hero-actions">
-          <button class="btn-primary" onclick="showPage('servicios')">Ver servicios</button>
-          <button class="btn-ghost"   onclick="showPage('contacto')">Hablar con nosotros</button>
+          <button class="btn-primary" onclick="showPage('servicios')" id="cms-hero-btn1">Ver servicios</button>
+          <button class="btn-ghost"   onclick="showPage('contacto')" id="cms-hero-btn2">Hablar con nosotros</button>
         </div>
       </div>
 
@@ -644,20 +644,20 @@
                 <span class="about-tag cyan">Estrategia</span>
               </div>
             </div>
-            <div class="about-card-metrics">
+            <div class="about-card-metrics" id="cms-estadisticas">
               <div class="about-metric">
-                <span class="about-metric-num">50+</span>
-                <span class="about-metric-lbl">Proyectos</span>
+                <span class="about-metric-num" id="cms-stat-0-val">50+</span>
+                <span class="about-metric-lbl" id="cms-stat-0-lbl">Proyectos</span>
               </div>
               <div class="about-metric-divider"></div>
               <div class="about-metric">
-                <span class="about-metric-num">98%</span>
-                <span class="about-metric-lbl">Satisfacción</span>
+                <span class="about-metric-num" id="cms-stat-1-val">98%</span>
+                <span class="about-metric-lbl" id="cms-stat-1-lbl">Satisfacción</span>
               </div>
               <div class="about-metric-divider"></div>
               <div class="about-metric">
-                <span class="about-metric-num">24/7</span>
-                <span class="about-metric-lbl">Soporte</span>
+                <span class="about-metric-num" id="cms-stat-2-val">24/7</span>
+                <span class="about-metric-lbl" id="cms-stat-2-lbl">Soporte</span>
               </div>
             </div>
             <div class="about-card-pillars">
@@ -809,5 +809,42 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Carga contenido dinámico desde el CMS
+    (async function() {
+      try {
+        const res = await fetch('/api/content');
+        if (!res.ok) return;
+        const c = await res.json();
+
+        // Hero
+        if (c.hero) {
+          const h = c.hero;
+          if (h.badge)    setText('cms-hero-badge', h.badge);
+          if (h.titulo1)  setText('cms-hero-titulo1', h.titulo1);
+          if (h.titulo2)  setText('cms-hero-titulo2', h.titulo2);
+          if (h.subtitulo) setText('cms-hero-subtitulo', h.subtitulo);
+          if (h.btn1)     setText('cms-hero-btn1', h.btn1);
+          if (h.btn2)     setText('cms-hero-btn2', h.btn2);
+        }
+
+        // Estadísticas
+        if (c.estadisticas) {
+          c.estadisticas.forEach(function(s, i) {
+            setText('cms-stat-' + i + '-val', s.valor);
+            setText('cms-stat-' + i + '-lbl', s.etiqueta);
+          });
+        }
+
+      } catch(e) {
+        // Falla silenciosa — el contenido original del HTML permanece
+      }
+
+      function setText(id, text) {
+        var el = document.getElementById(id);
+        if (el && text) el.textContent = text;
+      }
+    })();
+  </script>
 </body>
 </html>

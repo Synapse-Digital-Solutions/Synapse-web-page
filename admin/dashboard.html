@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synapse Admin · Dashboard</title>
+  <link rel="icon" href="../favicon.ico">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --red: #ef4444;
+      --sidebar-w: 240px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo img { height: 28px; }
+
+    .sidebar-logo-label {
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem .75rem;
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+    }
+
+    .nav-section-label {
+      font-size: .65rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      padding: .5rem .75rem .25rem;
+      margin-top: .5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .6rem .75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+    .nav-item.active { background: rgba(168,85,247,.12); color: var(--purple); }
+
+    .nav-item svg { flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 1rem .75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      width: 100%;
+      padding: .6rem .75rem;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-size: .875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color .15s, background .15s;
+    }
+
+    .btn-logout:hover { color: var(--red); background: rgba(239,68,68,.08); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .topbar-badge {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .75rem;
+      color: var(--green);
+    }
+
+    .topbar-badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .content {
+      padding: 2rem;
+      flex: 1;
+    }
+
+    /* ── PANEL ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: .3rem;
+    }
+
+    .panel-sub {
+      font-size: .875rem;
+      color: var(--muted);
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .card-title-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+
+    /* ── FORM ── */
+    .field { margin-bottom: 1rem; }
+
+    .field label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: .4rem;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .65rem .9rem;
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .field input:focus,
+    .field textarea:focus { border-color: var(--purple); }
+
+    /* Tags / bullets editor */
+    .tags-editor {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .5rem;
+      min-height: 44px;
+      cursor: text;
+    }
+
+    .tags-editor:focus-within { border-color: var(--purple); }
+
+    .tag {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      background: rgba(168,85,247,.12);
+      color: var(--purple);
+      border-radius: 6px;
+      padding: .25rem .6rem;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+
+    .tag-remove {
+      cursor: pointer;
+      opacity: .6;
+      line-height: 1;
+      padding: 0 .1rem;
+    }
+
+    .tag-remove:hover { opacity: 1; }
+
+    .tag-input {
+      border: none;
+      background: none;
+      color: var(--text);
+      font-size: .85rem;
+      outline: none;
+      flex: 1;
+      min-width: 80px;
+      padding: .2rem .3rem;
+      font-family: inherit;
+    }
+
+    .tags-hint {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: .35rem;
+    }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* ── SAVE BTN ── */
+    .save-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-save {
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .65rem 1.4rem;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+    }
+
+    .btn-save:hover { background: #9333ea; }
+    .btn-save:disabled { opacity: .5; cursor: not-allowed; }
+
+    .save-status {
+      font-size: .85rem;
+      color: var(--muted);
+      display: none;
+    }
+
+    .save-status.ok { color: var(--green); display: inline; }
+    .save-status.err { color: var(--red); display: inline; }
+    .save-status.loading { color: var(--muted); display: inline; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .8rem 1.2rem;
+      font-size: .875rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      z-index: 999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform .3s, opacity .3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { border-color: rgba(34,197,94,.3); color: var(--green); }
+    .toast.error { border-color: rgba(239,68,68,.3); color: var(--red); }
+
+    /* ── LOADING ── */
+    .skeleton {
+      background: linear-gradient(90deg, #1e1e2e 25%, #252535 50%, #1e1e2e 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+      height: 40px;
+      margin-bottom: .75rem;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img src="../logo.png" alt="Synapse">
+    <span class="sidebar-logo-label">Admin</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Contenido</div>
+
+    <button class="nav-item active" onclick="showPanel('hero')" id="nav-hero">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Hero principal
+    </button>
+
+    <button class="nav-item" onclick="showPanel('estadisticas')" id="nav-estadisticas">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Estadísticas
+    </button>
+
+    <button class="nav-item" onclick="showPanel('servicios')" id="nav-servicios">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Servicios
+    </button>
+
+    <button class="nav-item" onclick="showPanel('precios')" id="nav-precios">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Precios
+    </button>
+
+    <div class="nav-section-label">Sitio</div>
+
+    <a class="nav-item" href="/" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Ver página web
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="logout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Hero principal</span>
+    <span class="topbar-badge">
+      <span class="topbar-badge-dot"></span>
+      Conectado
+    </span>
+  </div>
+
+  <div class="content">
+
+    <!-- ── PANEL: HERO ── -->
+    <div class="panel active" id="panel-hero">
+      <div class="panel-header">
+        <div class="panel-title">Hero principal</div>
+        <div class="panel-sub">El texto que ve el visitante al entrar a la página.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="card-title-dot" style="background:var(--purple)"></span>
+          Textos principales
+        </div>
+        <div class="field">
+          <label>Badge (texto pequeño arriba del título)</label>
+          <input type="text" id="hero-badge" placeholder="Tecnología que conecta negocios">
+        </div>
+        <div class="field">
+          <label>Título línea 1</label>
+          <input type="text" id="hero-titulo1" placeholder="Tu presencia digital,">
+        </div>
+        <div class="field">
+          <label>Título línea 2 (en cursiva)</label>
+          <input type="text" id="hero-titulo2" placeholder="redefinida.">
+        </div>
+        <div class="field">
+          <label>Subtítulo / descripción</label>
+          <textarea id="hero-subtitulo" placeholder="Diseñamos páginas web que convierten…"></textarea>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Botón primario</label>
+            <input type="text" id="hero-btn1" placeholder="Ver servicios">
+          </div>
+          <div class="field">
+            <label>Botón secundario</label>
+            <input type="text" id="hero-btn2" placeholder="Hablar con nosotros">
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="btn-save" onclick="saveSection('hero')">Guardar cambios</button>
+          <span class="save-status" id="status-hero"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: ESTADÍSTICAS ── -->
+    <div class="panel" id="panel-estadisticas">
+      <div class="panel-header">
+        <div class="panel-title">Estadísticas</div>
+        <div class="panel-sub">Números que aparecen en la página de inicio y Nosotros.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span class="card-title-dot" style="background:var(--cyan)"></span>
+          Métricas destacadas
+        </div>
+        <div id="stats-list"></div>
+        <div class="save-row">
+          <button class="btn-save" onclick="saveSection('estadisticas')">Guardar cambios</button>
+          <span class="save-status" id="status-estadisticas"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: SERVICIOS ── -->
+    <div class="panel" id="panel-servicios">
+      <div class="panel-header">
+        <div class="panel-title">Servicios</div>
+        <div class="panel-sub">Los tres servicios que ofrece Synapse.</div>
+      </div>
+      <div id="servicios-list"></div>
+    </div>
+
+    <!-- ── PANEL: PRECIOS ── -->
+    <div class="panel" id="panel-precios">
+      <div class="panel-header">
+        <div class="panel-title">Precios</div>
+        <div class="panel-sub">Planes y precios que se muestran a los visitantes.</div>
+      </div>
+      <div id="precios-list"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
