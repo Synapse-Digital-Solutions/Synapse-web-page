@@ -128,10 +128,10 @@ function setVal(id, v) {
 
 // ── Estadísticas ──
 const DEFAULT_STATS = [
-  { valor: '50+', etiqueta: 'Proyectos' },
-  { valor: '98%', etiqueta: 'Satisfacción' },
-  { valor: '3x',  etiqueta: 'Conversiones' },
-  { valor: '24/7', etiqueta: 'Soporte' },
+  { valor: '50+', etiqueta: 'Proyectos entregados' },
+  { valor: '98%', etiqueta: 'Satisfacción del cliente' },
+  { valor: '3x',  etiqueta: 'Más conversiones promedio' },
+  { valor: '24h', etiqueta: 'Tiempo de respuesta' },
 ];
 
 function renderEstadisticas() {

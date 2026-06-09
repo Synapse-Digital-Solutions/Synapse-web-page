@@ -115,10 +115,10 @@
     <section class="numbers">
       <div class="numbers-label">Nuestros números hablan</div>
       <div class="numbers-grid">
-        <div class="nstat anim"><span class="nstat-num" data-target="50" data-suffix="+">50+</span><span class="nstat-lbl">Proyectos entregados</span></div>
-        <div class="nstat anim anim-d1"><span class="nstat-num" data-target="98" data-suffix="%">98%</span><span class="nstat-lbl">Satisfacción del cliente</span></div>
-        <div class="nstat anim anim-d2"><span class="nstat-num" data-target="3" data-suffix="x">3x</span><span class="nstat-lbl">Más conversiones promedio</span></div>
-        <div class="nstat anim anim-d3"><span class="nstat-num" data-target="24" data-suffix="h">24h</span><span class="nstat-lbl">Tiempo de respuesta</span></div>
+        <div class="nstat anim"><span class="nstat-num" id="cms-nstat-0" data-target="50" data-suffix="+">50+</span><span class="nstat-lbl" id="cms-nstat-0-lbl">Proyectos entregados</span></div>
+        <div class="nstat anim anim-d1"><span class="nstat-num" id="cms-nstat-1" data-target="98" data-suffix="%">98%</span><span class="nstat-lbl" id="cms-nstat-1-lbl">Satisfacción del cliente</span></div>
+        <div class="nstat anim anim-d2"><span class="nstat-num" id="cms-nstat-2" data-target="3" data-suffix="x">3x</span><span class="nstat-lbl" id="cms-nstat-2-lbl">Más conversiones promedio</span></div>
+        <div class="nstat anim anim-d3"><span class="nstat-num" id="cms-nstat-3" data-target="24" data-suffix="h">24h</span><span class="nstat-lbl" id="cms-nstat-3-lbl">Tiempo de respuesta</span></div>
       </div>
     </section>
 
@@ -828,9 +828,27 @@
           if (h.btn2)     setText('cms-hero-btn2', h.btn2);
         }
 
-        // Estadísticas
+        // Estadísticas — página Inicio (4 contadores animados)
         if (c.estadisticas) {
           c.estadisticas.forEach(function(s, i) {
+            var el = document.getElementById('cms-nstat-' + i);
+            if (el && s.valor) {
+              var match = String(s.valor).match(/^(\d+)(.*)$/);
+              if (match) {
+                el.dataset.target = match[1];
+                el.dataset.suffix = match[2];
+              } else {
+                el.textContent = s.valor;
+              }
+            }
+            setText('cms-nstat-' + i + '-lbl', s.etiqueta);
+          });
+
+          // Estadísticas — página Nosotros (3 métricas, mapeadas desde las primeras 3)
+          var aboutMap = [0, 1, 2];
+          aboutMap.forEach(function(srcIndex, i) {
+            var s = c.estadisticas[srcIndex];
+            if (!s) return;
             setText('cms-stat-' + i + '-val', s.valor);
             setText('cms-stat-' + i + '-lbl', s.etiqueta);
           });

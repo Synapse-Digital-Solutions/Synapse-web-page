@@ -23,13 +23,14 @@ INSERT INTO content (key, data) VALUES (
   }'::jsonb
 ) ON CONFLICT (key) DO NOTHING;
 
--- Datos iniciales: Estadísticas
+-- Datos iniciales: Estadísticas (los 4 contadores de la sección "Nuestros números hablan" en Inicio)
 INSERT INTO content (key, data) VALUES (
   'estadisticas',
   '[
-    {"valor": "50+",  "etiqueta": "Proyectos"},
-    {"valor": "98%",  "etiqueta": "Satisfacción"},
-    {"valor": "24/7", "etiqueta": "Soporte"}
+    {"valor": "50+", "etiqueta": "Proyectos entregados"},
+    {"valor": "98%", "etiqueta": "Satisfacción del cliente"},
+    {"valor": "3x",  "etiqueta": "Más conversiones promedio"},
+    {"valor": "24h", "etiqueta": "Tiempo de respuesta"}
   ]'::jsonb
 ) ON CONFLICT (key) DO NOTHING;
 
