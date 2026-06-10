@@ -1003,10 +1003,13 @@
         }
 
         // Promociones
-        if (Array.isArray(c.promociones) && c.promociones.length) {
+        var promosValidas = (c.promociones || []).filter(function(p) {
+          return p && (p.titulo || p.descripcion || p.imagen_url);
+        });
+        if (promosValidas.length) {
           var promosGrid = document.getElementById('cms-promos-grid');
           var promosSection = document.getElementById('cms-promos-section');
-          c.promociones.forEach(function(p) {
+          promosValidas.forEach(function(p) {
             var card = document.createElement('div');
             card.className = 'cms-promo-card';
             var html = '';
@@ -1023,10 +1026,13 @@
         }
 
         // Galería
-        if (Array.isArray(c.galeria) && c.galeria.length) {
+        var galeriaValida = (c.galeria || []).filter(function(item) {
+          return item && item.url;
+        });
+        if (galeriaValida.length) {
           var galGrid = document.getElementById('cms-gallery-grid');
           var galSection = document.getElementById('cms-gallery-section');
-          c.galeria.forEach(function(item) {
+          galeriaValida.forEach(function(item) {
             var el = document.createElement('div');
             el.className = 'cms-gallery-item';
             var html = '';

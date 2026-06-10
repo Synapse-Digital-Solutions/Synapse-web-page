@@ -107,11 +107,11 @@ function collectSection(key) {
   }
 
   if (key === 'promociones') {
-    return getPromociones();
+    return getPromociones().filter(p => p.titulo || p.descripcion || p.imagen_url);
   }
 
   if (key === 'galeria') {
-    return getGaleria();
+    return getGaleria().filter(g => g.url);
   }
 
   if (key === 'banner') {
