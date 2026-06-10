@@ -20,6 +20,6 @@ export async function GET() {
   }
 
   return Response.json(content, {
-    headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=300' }
+    headers: { 'Cache-Control': 'public, max-age=0, s-maxage=5, stale-while-revalidate=30' }
   });
 }
